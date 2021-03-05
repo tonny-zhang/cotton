@@ -35,5 +35,3 @@ func main() {
 ```
 
 # todo list
-* add method "use" for Middleware
-* add default Logger
