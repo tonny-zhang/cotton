@@ -96,7 +96,7 @@ func (pr *pathRule) match(path string) (result matchResult) {
 			list := arr[0]
 			result.Params = make(map[string]string)
 			for i, k := range pr.params {
-				result.Params[k.name] = list[i]
+				result.Params[k.name] = list[i+1]
 			}
 			result.IsMatch = true
 		}

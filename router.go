@@ -98,6 +98,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ctx := Context{
 			Request:         r,
 			writer:          w,
+			index:           -1,
 			ruleMatchResult: *ruleMatchResult,
 		}
 		handler := *ruleMatchResult.rule.handler

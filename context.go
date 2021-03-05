@@ -14,6 +14,7 @@ type Context struct {
 	ruleMatchResult matchResult
 	statusCode      int
 	handlers        []HandlerFunc
+	index           int8
 
 	queryCache url.Values
 }
@@ -31,8 +32,10 @@ func (ctx *Context) initQueryCache() {
 // Next fn
 func (ctx *Context) Next() {
 	if nil != ctx.handlers {
-		for _, handler := range ctx.handlers {
-			handler(ctx)
+		ctx.index++
+		for ctx.index < int8(len(ctx.handlers)) {
+			ctx.handlers[ctx.index](ctx)
+			ctx.index++
 		}
 	}
 }

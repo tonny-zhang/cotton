@@ -50,6 +50,8 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 		writer = defaultWriter
 	}
 	return func(ctx *Context) {
+		ctx.Next()
+
 		param := LoggerFormatterParam{
 			Method:     ctx.Request.Method,
 			Path:       ctx.Request.RequestURI,
