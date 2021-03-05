@@ -1,4 +1,4 @@
-package router
+package httpserver
 
 import (
 	"httpserver/utils"
@@ -13,12 +13,13 @@ type ruleParam struct {
 }
 
 type pathRule struct {
-	rule       string
-	child      []string
-	countSplit int
-	ruleRegx   *regexp.Regexp
-	params     []ruleParam
-	handle     *HandleFunc
+	rule                    string
+	child                   []string
+	countSplit              int
+	ruleRegx                *regexp.Regexp
+	params                  []ruleParam
+	handler                 *HandlerFunc
+	middlewareHandlersIndex int
 }
 
 type matchResult struct {
@@ -42,12 +43,13 @@ func (s pathRuleSlice) Less(i, j int) bool {
 	return result > 0
 }
 
-func newPathRule(rule string, handle *HandleFunc) pathRule {
+func newPathRule(rule string, handler *HandlerFunc) pathRule {
 	rule = utils.CleanPath(rule)
 	rp := pathRule{
-		rule:       rule,
-		handle:     handle,
-		countSplit: strings.Count(rule, "/"),
+		rule:                    rule,
+		handler:                 handler,
+		countSplit:              strings.Count(rule, "/"),
+		middlewareHandlersIndex: -1,
 	}
 	rp.child = strings.Split(strings.Trim(rule, "/"), "/")
 	if strings.Index(rp.rule, ":") > -1 {

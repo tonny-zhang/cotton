@@ -1,4 +1,4 @@
-package router
+package httpserver
 
 // IRouter router interface
 type IRouter interface {
