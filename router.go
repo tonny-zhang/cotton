@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"fmt"
+	"httpserver/utils"
 	"net/http"
 	"sort"
 	"strings"
@@ -12,6 +13,7 @@ type HandlerFunc func(ctx *Context)
 
 // Router router struct
 type Router struct {
+	prefix      string
 	tree        map[string]pathRuleSlice
 	middlewares []middleware
 	countRouter int
@@ -26,6 +28,9 @@ func NewRouter() Router {
 	}
 }
 func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
+	if "" != router.prefix {
+		path = utils.CleanPath(router.prefix + "/" + path)
+	}
 	if !strings.HasPrefix(path, "/") {
 		panic(fmt.Errorf("[%s] shold absolute path", path))
 	}
@@ -75,21 +80,20 @@ func (router *Router) match(method, path string) *matchResult {
 	return nil
 }
 func (router *Router) runMiddleWare(ctx Context, indexStart int) {
-	if indexStart < 0 {
-		return
-	}
-	middlewares := router.middlewares[:indexStart+1]
-	if len(middlewares) > 0 {
-		for i, middleware := range middlewares {
-			if i <= middleware.countRouter {
-				for _, handler := range middleware.handlers {
-					handler(&ctx)
+	if indexStart >= 0 {
+		middlewares := router.middlewares[:indexStart+1]
+		if len(middlewares) > 0 {
+			for i, middleware := range middlewares {
+				if i <= middleware.countRouter {
+					for _, handler := range middleware.handlers {
+						handler(&ctx)
+					}
 				}
 			}
+			return
 		}
-	} else {
-		ctx.Next()
 	}
+	ctx.Next()
 }
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ruleMatchResult := router.match(r.Method, r.URL.Path)

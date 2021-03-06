@@ -61,5 +61,27 @@ func main() {
 		ctx.String("hello post " + ctx.Param("id"))
 	})
 
+	g1 := r.Group("/v1")
+	{
+		g1.Get("/a", func(ctx *httpserver.Context) {
+			ctx.String("g1 a")
+		})
+		g1.Get("/b", func(ctx *httpserver.Context) {
+			ctx.String("g1 b")
+		})
+	}
+	g2 := r.Group("/v2/:method")
+	{
+		g2.Get("/a", func(ctx *httpserver.Context) {
+			ctx.String("g2 a " + ctx.Param("method"))
+		})
+		g2.Get("/b", func(ctx *httpserver.Context) {
+			ctx.String("g2 b " + ctx.Param("method"))
+		})
+		g2.Get("/c/:id", func(ctx *httpserver.Context) {
+			ctx.String("g2 c " + ctx.Param("method") + " id = " + ctx.Param("id"))
+		})
+	}
+
 	r.Run(":5000")
 }
