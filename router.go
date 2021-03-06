@@ -110,7 +110,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("warning: no handler for [" + ruleMatchResult.rule.rule + "]")
 		}
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 
