@@ -92,41 +92,46 @@ func (router *Router) match(method, path string) *matchResult {
 	return nil
 }
 func (router *Router) runMiddleWare(ctx Context, indexStart int) {
+	var middlewares []middleware
 	if indexStart >= 0 {
-		middlewares := router.middlewares[:indexStart+1]
-		if len(middlewares) > 0 {
-			for i, middleware := range middlewares {
-				if i <= middleware.countRouter {
-					for _, handler := range middleware.handlers {
-						handler(&ctx)
-					}
+		middlewares = router.middlewares[:indexStart+1]
+	} else {
+		// run all middlewares
+		middlewares = router.middlewares
+	}
+	if len(middlewares) > 0 {
+		for i, middleware := range middlewares {
+			if i <= middleware.countRouter {
+				for _, handler := range middleware.handlers {
+					handler(&ctx)
 				}
 			}
-			return
 		}
+		return
 	}
 	ctx.Next()
 }
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ruleMatchResult := router.match(r.Method, r.URL.Path)
 
+	ctx := Context{
+		Request: r,
+		writer:  w,
+		index:   -1,
+	}
 	if nil != ruleMatchResult {
-		ctx := Context{
-			Request:         r,
-			writer:          w,
-			index:           -1,
-			ruleMatchResult: *ruleMatchResult,
-		}
+		ctx.ruleMatchResult = *ruleMatchResult
 		handler := *ruleMatchResult.rule.handler
 		if nil != handler {
 			ctx.handlers = append(ctx.handlers, handler)
-			router.runMiddleWare(ctx, *&ruleMatchResult.rule.middlewareHandlersIndex)
 		} else {
-			router.runMiddleWare(ctx, 0)
 			fmt.Println("warning: no handler for [" + ruleMatchResult.rule.rule + "]")
 		}
+
+		router.runMiddleWare(ctx, *&ruleMatchResult.rule.middlewareHandlersIndex)
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		ctx.StatusCode(http.StatusNotFound)
+		router.runMiddleWare(ctx, -1)
 	}
 }
 

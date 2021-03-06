@@ -3,13 +3,14 @@ package utils
 import (
 	"reflect"
 	"runtime"
-	"strings"
 )
 
 // GetHandlerName get handler name
 func GetHandlerName(handler interface{}) string {
-	if strings.HasPrefix(reflect.TypeOf(handler).String(), "func") {
-		return runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
-	}
-	return ""
+	defer func() {
+		// TODO: recover 之后在外层的处理
+		recover()
+	}()
+	// fmt.Println(reflect.TypeOf(handler).String())
+	return runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
 }

@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -69,10 +70,15 @@ func (ctx *Context) Param(key string) string {
 
 // StatusCode set status code
 func (ctx *Context) StatusCode(statusCode int) {
-	ctx.statusCode = statusCode
+	if ctx.statusCode == 0 {
+		ctx.statusCode = statusCode
+		ctx.writer.WriteHeader(statusCode)
+	} else {
+		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
+	}
 }
 func (ctx *Context) String(content string) {
-	ctx.StatusCode(200)
+	ctx.StatusCode(http.StatusOK)
 	ctx.writer.Write([]byte(content + "\n"))
 }
 func (ctx *Context) getRequestHeader(key string) string {

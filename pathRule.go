@@ -7,9 +7,17 @@ import (
 )
 
 var regParam = regexp.MustCompile(":[^/]+")
+var regParamDetail = regexp.MustCompile(":([a-z]+)(<num>|{([^}]+)})?")
+
+const (
+	ruleParamTypeString = 0
+	ruleParamTypeNum    = 1
+	ruleParamTypeRegexp = 2
+)
 
 type ruleParam struct {
 	name string
+	t    int
 }
 
 type pathRule struct {
@@ -55,12 +63,37 @@ func newPathRule(rule string, handler *HandlerFunc) pathRule {
 	if strings.Index(rp.rule, ":") > -1 {
 		rp.params = make([]ruleParam, 0)
 		ruleRegStr := regParam.ReplaceAllStringFunc(rp.rule, func(str string) string {
-			rp.params = append(rp.params, ruleParam{
-				name: str[1:],
-			})
-			return "([^/]+)"
+			resultDetail := regParamDetail.FindAllStringSubmatch(str, -1)[0]
+
+			// fmt.Println(resultDetail, len(resultDetail))
+			regexpStr := resultDetail[3]
+			isNum := false
+			isRegexp := "" != regexpStr
+
+			if !isRegexp {
+				isNum = resultDetail[2] == "<num>"
+				if isNum {
+					regexpStr = "\\d+"
+				}
+			}
+			rparam := ruleParam{
+				name: resultDetail[1],
+			}
+			if isNum {
+				rparam.t = ruleParamTypeNum
+			} else if isRegexp {
+				rparam.t = ruleParamTypeRegexp
+			} else {
+				rparam.t = ruleParamTypeString
+			}
+			rp.params = append(rp.params, rparam)
+
+			if "" == regexpStr {
+				regexpStr = "[^/]+"
+			}
+			return "(" + regexpStr + ")"
 		})
-		r, e := regexp.Compile(ruleRegStr)
+		r, e := regexp.Compile(ruleRegStr + "$")
 		if e == nil {
 			rp.ruleRegx = r
 		}
@@ -68,7 +101,7 @@ func newPathRule(rule string, handler *HandlerFunc) pathRule {
 	return rp
 }
 
-// IsConflictsWith is conflicts with other pathrule
+// isConflictsWith is conflicts with other pathrule
 func (pr *pathRule) isConflictsWith(other *pathRule) bool {
 	if pr.countSplit == other.countSplit {
 		if len(pr.child) != len(other.child) {

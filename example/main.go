@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"httpserver"
+	"httpserver/utils"
+	"net/http"
 )
 
 func main() {
+	fmt.Printf("name = [%s]\n", utils.GetHandlerName(13))
 	r := httpserver.NewRouter()
 	// f, e := os.OpenFile("1.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	// fmt.Println(f, e)
@@ -28,6 +31,7 @@ func main() {
 				strErr = string(b)
 			}
 		}
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.String("[500 error]" + strErr)
 	}))
 	r.Use(httpserver.Logger())
@@ -41,7 +45,8 @@ func main() {
 	})
 	r.Use(httpserver.LoggerWidthConf(httpserver.LoggerConf{
 		Formatter: func(param httpserver.LoggerFormatterParam) string {
-			return fmt.Sprintf("[info] %s %s\t%d %s\n",
+			return fmt.Sprintf("[info] %s %s %s\t%d %s\n",
+				utils.TimeFormat(param.TimeStamp),
 				param.ClientIP, param.Method, param.StatusCode,
 				param.Path,
 			)
@@ -66,8 +71,23 @@ func main() {
 		g1.Get("/a", func(ctx *httpserver.Context) {
 			ctx.String("g1 a")
 		})
-		g1.Get("/b", func(ctx *httpserver.Context) {
-			ctx.String("g1 b")
+
+		// <num> is short for {\d+}
+		// /v1/b/123 			=>	match
+		// /v1/b/113abc			=> 	no
+		// /v1/c/113/abctest	=> 	no
+		g1.Get("/b/:id<num>", func(ctx *httpserver.Context) {
+			ctx.String("g1 b id = " + ctx.Param("id"))
+		})
+		// /v1/c/123-abc 		=>	match
+		// /v1/c/113-abctest	=> 	no
+		g1.Get("/c/:rule{\\d+-[a-d]+}", func(ctx *httpserver.Context) {
+			ctx.String("g1 c rule = " + ctx.Param("rule"))
+		})
+		// /v1/c/123-abc/t 		=>	match
+		// /v1/c/113-abc/test	=> 	no
+		g1.Get("/d/:rule{\\d+-[a-d]+}/t", func(ctx *httpserver.Context) {
+			ctx.String("g1 d rule = " + ctx.Param("rule"))
 		})
 	}
 	g2 := r.Group("/v2/:method")
