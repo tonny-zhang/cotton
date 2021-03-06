@@ -27,6 +27,18 @@ func NewRouter() Router {
 		middlewares: make([]middleware, 0),
 	}
 }
+
+// Group get group router
+func (router *Router) Group(path string) Router {
+	r := Router{
+		prefix:      path,
+		tree:        router.tree,
+		middlewares: router.middlewares,
+		countRouter: router.countRouter,
+		isSorted:    router.isSorted,
+	}
+	return r
+}
 func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	if "" != router.prefix {
 		path = utils.CleanPath(router.prefix + "/" + path)
