@@ -9,7 +9,7 @@ import (
 
 // IsDebugging is in debug mode
 func IsDebugging() bool {
-	return true
+	return modeRuning == ModeDebug
 }
 
 func debugPrint(format string, values ...interface{}) {

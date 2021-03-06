@@ -18,8 +18,8 @@ type Router struct {
 	isSorted    bool
 }
 
-// New new router
-func New() Router {
+// NewRouter new router
+func NewRouter() Router {
 	return Router{
 		tree:        make(map[string]pathRuleSlice),
 		middlewares: make([]middleware, 0),
