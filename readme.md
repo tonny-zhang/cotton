@@ -44,6 +44,7 @@ func main() {
 ## Feature
 * router group
 * regexp for router path
+* middleware
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
