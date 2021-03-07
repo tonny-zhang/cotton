@@ -1,11 +1,12 @@
-package httpserver
+package cotton
 
 import (
 	"fmt"
-	"httpserver/utils"
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/tonny-zhang/cotton/utils"
 )
 
 // HandlerFunc handler func

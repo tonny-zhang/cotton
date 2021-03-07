@@ -1,4 +1,4 @@
-package httpserver
+package cotton
 
 const (
 	// ModeDebug debug mode

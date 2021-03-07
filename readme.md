@@ -1,73 +1,118 @@
-# go http service
+# Cotton Web Framework
+Cotton is a web framework written by Go (Golang).
 
-# how to use
+# Contents
+- [Cotton Web Framework](#cotton-web-framework)
+- [Contents](#contents)
+	- [Installation](#installation)
+	- [Quick start](#quick-start)
+	- [API Example](#api-example)
+		- [Using GET, POST](#using-get-post)
+		- [Parameters in path](#parameters-in-path)
+		- [Querystring parameters](#querystring-parameters)
+		- [Using middleware](#using-middleware)
+## Installation
+To install Cotton package, you need to install Go and set your Go workspace first.
+1. The first need [Go](https://golang.org) installed
+2. install Cotton
+```sh
+go get -u github.com/tonny-zhang/cotton
+```
+3. Import it in your code:
+```go
+import "github.com/tonny-zhang/cotton
+```
+
+## Quick start
+You can find more in example/*
+
 ```go
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-	"httpserver"
-)
+import "github.com/tonny-zhang/cotton"
 
 func main() {
 	r := httpserver.NewRouter()
-	// f, e := os.OpenFile("1.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-	// fmt.Println(f, e)
-	// r.Use(httpserver.Logger(), httpserver.LoggerWidthConf(httpserver.LoggerConf{
-	// 	Writer: f,
-	// }))
-
-	r.Get("/hello", nil)
-	// r.Use(httpserver.Recover())
-	r.Use(httpserver.RecoverWithWriter(nil, func(ctx *httpserver.Context, err interface{}) {
-		strErr := ""
-		switch err.(type) {
-		case string:
-			strErr = err.(string)
-		case error:
-			strErr = err.(error).Error()
-		default:
-			if b, err := json.Marshal(err); err == nil {
-				strErr = string(b)
-			}
-		}
-		ctx.String("[500 error]" + strErr)
-	}))
-	r.Use(httpserver.Logger())
-	r.Get("/panic", func(ctx *httpserver.Context) {
-		// i := 0
-		// fmt.Println(1 / i)
-		panic([]int{1, 2})
-	})
-	r.Get("/hello/", func(ctx *httpserver.Context) {
-		ctx.String("hello get2")
-	})
-	r.Use(httpserver.LoggerWidthConf(httpserver.LoggerConf{
-		Formatter: func(param httpserver.LoggerFormatterParam) string {
-			return fmt.Sprintf("[info] %s %s\t%d %s\n",
-				param.ClientIP, param.Method, param.StatusCode,
-				param.Path,
-			)
-
-		},
-	}))
-	r.Get("/user/", func(ctx *httpserver.Context) {
-		ctx.String("/user")
-	})
-	r.Get("/user/:name", func(ctx *httpserver.Context) {
-		ctx.String("user name = " + ctx.Param("name"))
-	})
-	r.Get("/user/:id/:name", func(ctx *httpserver.Context) {
-		ctx.String("user id = " + ctx.Param("id") + " name = " + ctx.Param("name"))
-	})
-	r.Post("/user/:id", func(ctx *httpserver.Context) {
-		ctx.String("hello post " + ctx.Param("id"))
+	r.Get("/hello", func(ctx *httpserver.Context) {
+		ctx.String("hello world from cotton")
 	})
 
-	r.Run(":5000")
+	r.Run(":8080")
 }
-
 ```
 
-# todo list
+## API Example
+You can find a number of ready-to-run examples at [examples folder](./example)
+
+### Using GET, POST
+
+```go
+func main() {
+	r := httpserver.NewRouter()
+	r.Get("/hello", handler)
+	r.Post("/hello", handler)
+
+	r.Run(":8080")
+}
+```
+
+### Parameters in path
+```go
+func main() {
+	r := httpserver.NewRouter()
+	// /user/tonny		=> 	match
+	// /user/123 		=> 	match
+	// /user			=> 	no
+	// /user/			=> 	no
+	r.Get("/user/:name", func(c *cotton.Context) {
+		c.String("hello "+c.Param("name"))
+	})
+
+	// /room/123		=> 	match
+	// /room			=> 	no
+	// /room/			=> 	no
+	// /room/tonny		=> 	no
+	r.Get("/room/:id<num>", func(c *cotton.Context) {
+		c.String("hello "+c.Param("id"))
+	})
+
+	// /action/123-ab		=> 	match
+	// /action/1-aa			=> 	match
+	// /action/11-bbb		=> 	no
+	// /action/test			=> 	no
+	r.Get("/action/:rule{\\d+-[ab]}", func(c *cotton.Context) {
+		c.String("hello action "+c.Param("rule"))
+	})
+
+	r.Run(":8080")
+}
+```
+
+### Querystring parameters
+```go
+func main() {
+	r := httpserver.NewRouter()
+	r.Get("/hello", func(c *cotton.Context) {
+		name := c.GetQuery("name")
+		first := c.GetDefaultQuery("first", "first default value")
+
+		c.String("hello "+name+" "+first)
+	})
+	r.Run(":8080")
+}
+```
+
+### Using middleware
+```go
+func main() {
+	r := httpserver.NewRouter()
+
+	r.Use(httpserver.Recover())
+	r.Use(httpserver.Logger())
+
+	r.Get("/hello", func(c *cotton.Context) {
+		c.String("hello")
+	})
+	r.Run(":8080")
+}
+```

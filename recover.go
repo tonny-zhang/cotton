@@ -1,14 +1,15 @@
-package httpserver
+package cotton
 
 import (
 	"bytes"
 	"fmt"
-	"httpserver/utils"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/tonny-zhang/cotton/utils"
 )
 
 var (

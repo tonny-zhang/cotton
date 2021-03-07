@@ -1,9 +1,10 @@
-package httpserver
+package cotton
 
 import (
-	"httpserver/utils"
 	"regexp"
 	"strings"
+
+	"github.com/tonny-zhang/cotton/utils"
 )
 
 var regParam = regexp.MustCompile(":[^/]+")

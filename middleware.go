@@ -1,4 +1,4 @@
-package httpserver
+package cotton
 
 type middleware struct {
 	handlers    []HandlerFunc

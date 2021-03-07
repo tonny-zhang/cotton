@@ -1,4 +1,4 @@
-module httpserver
+module github.com/tonny-zhang/cotton
 
 go 1.16
 
