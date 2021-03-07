@@ -33,8 +33,8 @@ package main
 import "github.com/tonny-zhang/cotton"
 
 func main() {
-	r := httpserver.NewRouter()
-	r.Get("/hello", func(ctx *httpserver.Context) {
+	r := cotton.NewRouter()
+	r.Get("/hello", func(ctx *cotton.Context) {
 		ctx.String("hello world from cotton")
 	})
 
@@ -53,7 +53,7 @@ You can find a number of ready-to-run examples at [examples folder](./example)
 
 ```go
 func main() {
-	r := httpserver.NewRouter()
+	r := cotton.NewRouter()
 	r.Get("/hello", handler)
 	r.Post("/hello", handler)
 
@@ -64,7 +64,7 @@ func main() {
 ### Parameters in path
 ```go
 func main() {
-	r := httpserver.NewRouter()
+	r := cotton.NewRouter()
 	// /user/tonny		=> 	match
 	// /user/123 		=> 	match
 	// /user			=> 	no
@@ -96,7 +96,7 @@ func main() {
 ### Querystring parameters
 ```go
 func main() {
-	r := httpserver.NewRouter()
+	r := cotton.NewRouter()
 	r.Get("/hello", func(c *cotton.Context) {
 		name := c.GetQuery("name")
 		first := c.GetDefaultQuery("first", "first default value")
@@ -110,10 +110,10 @@ func main() {
 ### Using middleware
 ```go
 func main() {
-	r := httpserver.NewRouter()
+	r := cotton.NewRouter()
 
-	r.Use(httpserver.Recover())
-	r.Use(httpserver.Logger())
+	r.Use(cotton.Recover())
+	r.Use(cotton.Logger())
 
 	r.Get("/hello", func(c *cotton.Context) {
 		c.String("hello")
