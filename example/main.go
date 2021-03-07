@@ -9,8 +9,9 @@ import (
 )
 
 func main() {
-	fmt.Printf("name = [%s]\n", utils.GetHandlerName(13))
 	r := httpserver.NewRouter()
+
+	// writer logger to file
 	// f, e := os.OpenFile("1.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	// fmt.Println(f, e)
 	// r.Use(httpserver.Logger(), httpserver.LoggerWidthConf(httpserver.LoggerConf{

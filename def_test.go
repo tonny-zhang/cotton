@@ -15,6 +15,6 @@ func doRequest(handler http.Handler, method, path string) *httptest.ResponseReco
 }
 
 func TestMain(m *testing.M) {
-	// SetMode(ModeTest)
+	SetMode(ModeTest)
 	m.Run()
 }
