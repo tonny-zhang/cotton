@@ -6,6 +6,7 @@ Cotton is a web framework written by Go (Golang).
 - [Contents](#contents)
 	- [Installation](#installation)
 	- [Quick start](#quick-start)
+	- [Feature](#feature)
 	- [API Example](#api-example)
 		- [Using GET, POST](#using-get-post)
 		- [Parameters in path](#parameters-in-path)
@@ -40,6 +41,9 @@ func main() {
 	r.Run(":8080")
 }
 ```
+## Feature
+* router group
+* regexp for router path
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
