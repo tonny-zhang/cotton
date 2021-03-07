@@ -11,7 +11,7 @@ import (
 // Context context for request
 type Context struct {
 	Request         *http.Request
-	writer          http.ResponseWriter
+	Response        http.ResponseWriter
 	ruleMatchResult matchResult
 	statusCode      int
 	handlers        []HandlerFunc
@@ -72,14 +72,14 @@ func (ctx *Context) Param(key string) string {
 func (ctx *Context) StatusCode(statusCode int) {
 	if ctx.statusCode == 0 {
 		ctx.statusCode = statusCode
-		ctx.writer.WriteHeader(statusCode)
+		ctx.Response.WriteHeader(statusCode)
 	} else {
 		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
 	}
 }
 func (ctx *Context) String(content string) {
 	ctx.StatusCode(http.StatusOK)
-	ctx.writer.Write([]byte(content + "\n"))
+	ctx.Response.Write([]byte(content + "\n"))
 }
 func (ctx *Context) getRequestHeader(key string) string {
 	if nil != ctx.Request {

@@ -8,7 +8,7 @@ Cotton is a web framework written by Go (Golang).
 	- [Quick start](#quick-start)
 	- [Feature](#feature)
 	- [API Example](#api-example)
-		- [Using GET, POST](#using-get-post)
+		- [Using GET, POST, PUT, OPTIONS, DELETE, PATCH, HEAD](#using-get-post-put-options-delete-patch-head)
 		- [Parameters in path](#parameters-in-path)
 		- [Querystring parameters](#querystring-parameters)
 		- [Using middleware](#using-middleware)
@@ -49,7 +49,7 @@ func main() {
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
 
-### Using GET, POST
+### Using GET, POST, PUT, OPTIONS, DELETE, PATCH, HEAD
 
 ```go
 func main() {

@@ -13,8 +13,8 @@ func TestRecoverWithWriter(t *testing.T) {
 
 	router := NewRouter()
 	router.Use(RecoverWithWriter(buf, func(ctx *Context, err interface{}) {
-		ctx.writer.WriteHeader(http.StatusOK)
-		ctx.writer.Write([]byte("[RECOVER]" + err.(string)))
+		ctx.Response.WriteHeader(http.StatusOK)
+		ctx.Response.Write([]byte("[RECOVER]" + err.(string)))
 	}))
 	router.Get("/panic", func(c *Context) {
 		panic("test")

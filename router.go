@@ -74,6 +74,31 @@ func (router *Router) Post(path string, handler HandlerFunc) {
 	router.addHandleFunc(http.MethodPost, path, handler)
 }
 
+// Put router put method
+func (router *Router) Put(path string, handler HandlerFunc) {
+	router.addHandleFunc(http.MethodPut, path, handler)
+}
+
+// Options router options method
+func (router *Router) Options(path string, handler HandlerFunc) {
+	router.addHandleFunc(http.MethodOptions, path, handler)
+}
+
+// Delete router delete method
+func (router *Router) Delete(path string, handler HandlerFunc) {
+	router.addHandleFunc(http.MethodDelete, path, handler)
+}
+
+// Patch router patch method
+func (router *Router) Patch(path string, handler HandlerFunc) {
+	router.addHandleFunc(http.MethodPatch, path, handler)
+}
+
+// Head router head method
+func (router *Router) Head(path string, handler HandlerFunc) {
+	router.addHandleFunc(http.MethodHead, path, handler)
+}
+
 func (router *Router) match(method, path string) *matchResult {
 	if !router.isSorted {
 		for k := range router.tree {
@@ -116,9 +141,9 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ruleMatchResult := router.match(r.Method, r.URL.Path)
 
 	ctx := Context{
-		Request: r,
-		writer:  w,
-		index:   -1,
+		Request:  r,
+		Response: w,
+		index:    -1,
 	}
 	if nil != ruleMatchResult {
 		ctx.ruleMatchResult = *ruleMatchResult
