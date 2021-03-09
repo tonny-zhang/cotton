@@ -10,14 +10,17 @@ import (
 
 // Context context for request
 type Context struct {
-	Request         *http.Request
-	Response        http.ResponseWriter
-	ruleMatchResult matchResult
-	statusCode      int
-	handlers        []HandlerFunc
-	index           int8
+	Request    *http.Request
+	Response   http.ResponseWriter
+	statusCode int
+	handlers   []HandlerFunc
+	index      int8
 
+	paramCache map[string]string
 	queryCache url.Values
+
+	// TODO: 删除
+	ruleMatchResult matchResult
 }
 
 func (ctx *Context) initQueryCache() {
@@ -61,10 +64,13 @@ func (ctx *Context) GetDefaultQuery(key, defaultVal string) string {
 //         id := c.Param("id") // id == "john"
 //     })
 func (ctx *Context) Param(key string) string {
-	val, ok := ctx.ruleMatchResult.Params[key]
-	if ok {
-		return val
+	if ctx.paramCache != nil {
+		val, ok := ctx.paramCache[key]
+		if ok {
+			return val
+		}
 	}
+
 	return ""
 }
 
