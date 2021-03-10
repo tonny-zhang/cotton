@@ -12,6 +12,7 @@ Cotton is a web framework written by Go (Golang).
 		- [Parameters in path](#parameters-in-path)
 		- [Querystring parameters](#querystring-parameters)
 		- [Using middleware](#using-middleware)
+		- [Using group](#using-group)
 ## Installation
 To install Cotton package, you need to install Go and set your Go workspace first.
 1. The first need [Go](https://golang.org) installed
@@ -43,7 +44,7 @@ func main() {
 ```
 ## Feature
 * router group
-* regexp for router path
+* parameters path
 * middleware
 
 ## API Example
@@ -73,20 +74,11 @@ func main() {
 		c.String("hello "+c.Param("name"))
 	})
 
-	// /room/123		=> 	match
-	// /room			=> 	no
+	// /file/test		=> 	match
+	// /file/a/b/c		=> 	match
 	// /room/			=> 	no
-	// /room/tonny		=> 	no
-	r.Get("/room/:id<num>", func(c *cotton.Context) {
-		c.String("hello "+c.Param("id"))
-	})
-
-	// /action/123-ab		=> 	match
-	// /action/1-aa			=> 	match
-	// /action/11-bbb		=> 	no
-	// /action/test			=> 	no
-	r.Get("/action/:rule{\\d+-[ab]}", func(c *cotton.Context) {
-		c.String("hello action "+c.Param("rule"))
+	r.Get("/file/*file", func(c *cotton.Context) {
+		c.String("file = "+c.Param("file"))
 	})
 
 	r.Run(":8080")
@@ -118,6 +110,30 @@ func main() {
 	r.Get("/hello", func(c *cotton.Context) {
 		c.String("hello")
 	})
+	r.Run(":8080")
+}
+```
+
+### Using group
+```go
+func main() {
+	r := cotton.NewRouter()
+	g1 := r.Group("/v1", func(ctx *cotton.Context) {
+		// use as a middleware in group
+	})
+	g1.Use(func(ctx *cotton.Context) {
+		fmt.Println("g1 middleware 2")
+	})
+	{
+		g1.Get("/a", func(ctx *cotton.Context) {
+			ctx.String(http.StatusOK, "g1 a")
+		})
+	}
+
+	r.Get("/v2/a", func(ctx *cotton.Context) {
+		ctx.String(http.StatusOK, "hello v2/a")
+	})
+
 	r.Run(":8080")
 }
 ```

@@ -3,7 +3,6 @@ package cotton
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/tonny-zhang/cotton/utils"
@@ -16,33 +15,25 @@ type HandlerFunc func(ctx *Context)
 type Router struct {
 	prefix      string
 	trees       map[string]*tree
-	middlewares []middleware
-	countRouter int
-	isSorted    bool
-
-	// TODO: 之后要删除
-	tree map[string]pathRuleSlice
+	middlewares []HandlerFunc
 }
 
 // NewRouter new router
 func NewRouter() Router {
 	return Router{
-		tree:        make(map[string]pathRuleSlice),
 		trees:       make(map[string]*tree),
-		middlewares: make([]middleware, 0),
+		middlewares: make([]HandlerFunc, 0),
 	}
 }
 
 // Group get group router
-func (router *Router) Group(path string) Router {
+func (router *Router) Group(path string, handler ...HandlerFunc) Router {
 	r := Router{
 		prefix:      path,
-		tree:        router.tree,
 		trees:       router.trees,
 		middlewares: router.middlewares,
-		countRouter: router.countRouter,
-		isSorted:    router.isSorted,
 	}
+	r.middlewares = append(r.middlewares, handler...)
 	return r
 }
 func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
@@ -52,26 +43,17 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	if !strings.HasPrefix(path, "/") {
 		panic(fmt.Errorf("[%s] shold absolute path", path))
 	}
+	if handler == nil {
+		panic(fmt.Errorf("%s %s has no handler", method, path))
+	}
 	if _, ok := router.trees[method]; !ok {
 		router.trees[method] = newTree()
 	}
-	router.trees[method].Add(path, handler)
+	nodeAdded := router.trees[method].Add(path, nil)
+	nodeAdded.middleware = append(nodeAdded.middleware, router.middlewares...)
+	nodeAdded.handler = handler
+	nodeAdded.middleware = append(nodeAdded.middleware, handler)
 	debugPrintRoute(method, path, handler)
-
-	// if _, ok := router.trees[method]; !ok {
-	// 	router.tree[method] = make([]pathRule, 0)
-	// }
-	// pr := newPathRule(path, &handler)
-	// for _, v := range router.tree[method] {
-	// 	if pr.isConflictsWith(&v) {
-	// 		panic(fmt.Errorf("[%s] conflicts with [%s]", pr.rule, v.rule))
-	// 	}
-	// }
-
-	// pr.middlewareHandlersIndex = len(router.middlewares) - 1
-	// router.countRouter++
-	// router.tree[method] = append(router.tree[method], pr)
-	// debugPrintRoute(method, path, handler)
 }
 
 // Get router get method
@@ -109,44 +91,6 @@ func (router *Router) Head(path string, handler HandlerFunc) {
 	router.addHandleFunc(http.MethodHead, path, handler)
 }
 
-func (router *Router) match(method, path string) *matchResult {
-	if !router.isSorted {
-		for k := range router.tree {
-			sort.Sort(router.tree[k])
-		}
-	}
-	rules, ok := router.tree[method]
-
-	if ok && len(rules) > 0 {
-		for _, rule := range rules {
-			rm := rule.match(path)
-			if rm.IsMatch {
-				return &rm
-			}
-		}
-	}
-	return nil
-}
-func (router *Router) runMiddleWare(ctx Context, indexStart int) {
-	var middlewares []middleware
-	if indexStart >= 0 {
-		middlewares = router.middlewares[:indexStart+1]
-	} else {
-		// run all middlewares
-		middlewares = router.middlewares
-	}
-	if len(middlewares) > 0 {
-		for i, middleware := range middlewares {
-			if i <= middleware.countRouter {
-				for _, handler := range middleware.handlers {
-					handler(&ctx)
-				}
-			}
-		}
-		return
-	}
-	ctx.Next()
-}
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := Context{
 		Request:  r,
@@ -154,42 +98,20 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		index:    -1,
 	}
 
+	r.Method = strings.ToUpper(r.Method)
 	if tree, ok := router.trees[r.Method]; ok {
 		result := tree.Find(r.URL.Path)
 		if result != nil {
 			ctx.paramCache = result.params
-			handler := result.node.handler
-			if handler != nil {
-				handler(&ctx)
-			} else {
-				fmt.Println("warning: no handler for [" + result.node.key + "]")
-			}
+			ctx.handlers = result.node.middleware
+
+			ctx.Next()
 			return
 		}
 	}
-	ctx.StatusCode(http.StatusNotFound)
 
-	// ruleMatchResult := router.match(r.Method, r.URL.Path)
-
-	// ctx := Context{
-	// 	Request:  r,
-	// 	Response: w,
-	// 	index:    -1,
-	// }
-	// if nil != ruleMatchResult {
-	// 	ctx.ruleMatchResult = *ruleMatchResult
-	// 	handler := *ruleMatchResult.rule.handler
-	// 	if nil != handler {
-	// 		ctx.handlers = append(ctx.handlers, handler)
-	// 	} else {
-	// 		fmt.Println("warning: no handler for [" + ruleMatchResult.rule.rule + "]")
-	// 	}
-
-	// 	router.runMiddleWare(ctx, *&ruleMatchResult.rule.middlewareHandlersIndex)
-	// } else {
-	// 	ctx.StatusCode(http.StatusNotFound)
-	// 	router.runMiddleWare(ctx, -1)
-	// }
+	ctx.handlers = router.middlewares
+	ctx.NotFound()
 }
 
 // Run run for http
@@ -200,8 +122,5 @@ func (router *Router) Run(addr string) {
 
 // Use use for middleware
 func (router *Router) Use(handler ...HandlerFunc) {
-	router.middlewares = append(router.middlewares, middleware{
-		handlers:    append(make([]HandlerFunc, 0), handler...),
-		countRouter: router.countRouter,
-	})
+	router.middlewares = append(router.middlewares, handler...)
 }

@@ -1,6 +1,7 @@
 package cotton
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -15,12 +16,10 @@ type Context struct {
 	statusCode int
 	handlers   []HandlerFunc
 	index      int8
+	indexAbort int8
 
 	paramCache map[string]string
 	queryCache url.Values
-
-	// TODO: 删除
-	ruleMatchResult matchResult
 }
 
 func (ctx *Context) initQueryCache() {
@@ -42,6 +41,17 @@ func (ctx *Context) Next() {
 			ctx.index++
 		}
 	}
+}
+
+// Abort fn
+func (ctx *Context) Abort() {
+	ctx.index = int8(len(ctx.handlers) + 1)
+}
+
+// NotFound for 404
+func (ctx *Context) NotFound() {
+	ctx.StatusCode(http.StatusNotFound)
+	ctx.Next()
 }
 
 // GetQuery for Request.URL.Query().Get
@@ -83,9 +93,23 @@ func (ctx *Context) StatusCode(statusCode int) {
 		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
 	}
 }
-func (ctx *Context) String(content string) {
-	ctx.StatusCode(http.StatusOK)
-	ctx.Response.Write([]byte(content + "\n"))
+
+// String response with string
+func (ctx *Context) String(code int, content string) {
+	ctx.StatusCode(code)
+	ctx.Response.Write([]byte(content))
+}
+
+// JSON response with json
+func (ctx *Context) JSON(code int, val M) {
+	b, e := json.Marshal(val)
+	if e != nil {
+		panic(e)
+	}
+
+	ctx.Response.Header().Add("Content-Type", "application/json; charset=utf-8")
+	ctx.StatusCode(code)
+	ctx.Response.Write(b)
 }
 func (ctx *Context) getRequestHeader(key string) string {
 	if nil != ctx.Request {

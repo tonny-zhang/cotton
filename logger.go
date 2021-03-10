@@ -18,16 +18,18 @@ type LoggerFormatterParam struct {
 	Method     string
 	StatusCode int
 	TimeStamp  time.Time
+	Latency    time.Duration
 	ClientIP   string
 	Path       string
 }
 
 var defaultLogFormatter = func(param LoggerFormatterParam) string {
-	return fmt.Sprintf("[HS-INFO] %v\t%13s %6s %3d %s\n",
+	return fmt.Sprintf("[HS-INFO] %v\t%13s %6s %3d %10v %s \n",
 		param.TimeStamp.Format("2006/01/02 15:04:05"),
 		param.ClientIP,
 		param.Method,
 		param.StatusCode,
+		param.Latency,
 		param.Path,
 	)
 }
@@ -50,6 +52,7 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 		writer = defaultWriter
 	}
 	return func(ctx *Context) {
+		timeStart := time.Now()
 		ctx.Next()
 
 		param := LoggerFormatterParam{
@@ -59,6 +62,8 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 			StatusCode: ctx.statusCode,
 			ClientIP:   ctx.ClientIP(),
 		}
+
+		param.Latency = param.TimeStamp.Sub(timeStart)
 		fmt.Fprint(writer, formatter(param))
 	}
 }
