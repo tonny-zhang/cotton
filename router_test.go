@@ -14,7 +14,7 @@ func TestAddHandleFunc(t *testing.T) {
 		router := NewRouter()
 		router.Get("hello", nil)
 	})
-	assert.PanicsWithError(t, "[/:name] conflicts with [/hello]", func() {
+	assert.PanicsWithError(t, "[:name] in path [/:name] conflicts with [/hello]", func() {
 		router := NewRouter()
 		router.Get("/hello", handler)
 		router.Get("/:name", handler)

@@ -36,7 +36,8 @@ func (ctx *Context) initQueryCache() {
 func (ctx *Context) Next() {
 	if nil != ctx.handlers {
 		ctx.index++
-		for ctx.index < int8(len(ctx.handlers)) {
+		num := int8(len(ctx.handlers))
+		for ctx.index < num {
 			ctx.handlers[ctx.index](ctx)
 			ctx.index++
 		}

@@ -63,7 +63,7 @@ func main() {
 	r.Get("/user/:name", func(ctx *cotton.Context) {
 		ctx.String(http.StatusOK, "user name = "+ctx.Param("name"))
 	})
-	r.Get("/user/:id/:name", func(ctx *cotton.Context) {
+	r.Get("/user/:name/:id", func(ctx *cotton.Context) {
 		ctx.String(http.StatusOK, "user id = "+ctx.Param("id")+" name = "+ctx.Param("name"))
 	})
 	r.Get("/info/*file", func(ctx *cotton.Context) {

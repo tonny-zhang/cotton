@@ -90,14 +90,16 @@ func (router *Router) Patch(path string, handler HandlerFunc) {
 func (router *Router) Head(path string, handler HandlerFunc) {
 	router.addHandleFunc(http.MethodHead, path, handler)
 }
-
+func (router *Router) PrintTree(method string) {
+	router.trees[method].root.print(0)
+}
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := Context{
 		Request:  r,
 		Response: w,
 		index:    -1,
 	}
-
+	// ctx.index++
 	r.Method = strings.ToUpper(r.Method)
 	if tree, ok := router.trees[r.Method]; ok {
 		result := tree.Find(r.URL.Path)
