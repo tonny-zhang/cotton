@@ -137,7 +137,7 @@ func TestTree(t *testing.T) {
 	}
 	tmpValue += ""
 
-	printTree(tree)
+	// printTree(tree)
 
 	for _, path := range arrRouter {
 		tmpValue = ""
