@@ -13,7 +13,7 @@ Cotton is a web framework written by Go (Golang).
 		- [Querystring parameters](#querystring-parameters)
 		- [Using middleware](#using-middleware)
 		- [Using group](#using-group)
-	- [Benchmark](#benchmark)
+	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
 ## Installation
@@ -142,8 +142,8 @@ func main() {
 }
 ```
 
-## Benchmark
-the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench)repository
+## Benchmarks
+the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository
 
 ## Author
 * [tonny zhang](github.com/tonny-zhang)
