@@ -1,4 +1,4 @@
-[![GoDoc](https://pkg.go.dev/badge/github.com/tonny-zhang/cotton.svg)](https://pkg.go.dev/github.com/tonny-zhang/cotton) [![Release](https://img.shields.io/badge/release-v0.2.0-blue.svg?style=flat-square)](https://github.com/tonny-zhang/cotton/releases/tag/v0.2.0)
+[![GoDoc](https://pkg.go.dev/badge/github.com/tonny-zhang/cotton.svg)](https://pkg.go.dev/github.com/tonny-zhang/cotton) [![Release](https://img.shields.io/badge/release-v0.2.0-blue.svg?style=flat-square)](https://github.com/tonny-zhang/cotton/releases/tag/v0.2.0) [![Build Status](https://travis-ci.org/tonny-zhang/cotton.svg?branch=master)](https://travis-ci.org/tonny-zhang/cotton)
 
 Cotton is a web framework written by Go (Golang).
 
