@@ -17,7 +17,7 @@ func debugPrint(format string, values ...interface{}) {
 		if !strings.HasSuffix(format, "\n") {
 			format += "\n"
 		}
-		fmt.Fprintf(defaultWriter, "[HS-Debug] "+format, values...)
+		fmt.Fprintf(defaultWriter, "[Debug] "+format, values...)
 	}
 }
 

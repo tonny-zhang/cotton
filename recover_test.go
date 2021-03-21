@@ -20,7 +20,7 @@ func TestRecoverWithWriter(t *testing.T) {
 		panic("test")
 	})
 
-	w := doRequest(&router, http.MethodGet, "/panic")
+	w := doRequest(router, http.MethodGet, "/panic")
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "[RECOVER]test", w.Body.String())

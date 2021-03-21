@@ -16,25 +16,45 @@ type Router struct {
 	prefix      string
 	trees       map[string]*tree
 	middlewares []HandlerFunc
+
+	notfoundHandlers []HandlerFunc
+
+	groups []*Router
 }
 
 // NewRouter new router
-func NewRouter() Router {
-	return Router{
+func NewRouter() *Router {
+	return &Router{
 		trees:       make(map[string]*tree),
 		middlewares: make([]HandlerFunc, 0),
 	}
 }
 
 // Group get group router
-func (router *Router) Group(path string, handler ...HandlerFunc) Router {
-	r := Router{
-		prefix:      path,
-		trees:       router.trees,
-		middlewares: router.middlewares,
+func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
+	if router.prefix != "" {
+		panic(fmt.Errorf("group [%s] can not group again", router.prefix))
+	}
+	if len(path) == 0 || path[0] != '/' {
+		panic(fmt.Errorf("group [%s] must start with /", path))
+	}
+	if strings.Index(path, ":") > -1 || strings.Index(path, "*") > -1 {
+		panic(fmt.Errorf("group path [%s] can not has parameter", path))
+	}
+	r := &Router{
+		prefix:           utils.CleanPath(path + "/"),
+		trees:            router.trees,
+		middlewares:      router.middlewares,
+		notfoundHandlers: router.notfoundHandlers,
 	}
 	r.middlewares = append(r.middlewares, handler...)
+	router.groups = append(router.groups, r)
 	return r
+}
+
+// NotFound custom NotFoundHandler
+func (router *Router) NotFound(handler ...HandlerFunc) {
+	router.notfoundHandlers = handler
 }
 func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	if "" != router.prefix {
@@ -104,8 +124,9 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := newContext(w, r)
 
 	r.Method = strings.ToUpper(r.Method)
+	reqURI := r.URL.Path
 	if tree, ok := router.trees[r.Method]; ok {
-		result := tree.root.find(r.URL.Path)
+		result := tree.root.find(reqURI)
 
 		if result.node != nil {
 			ctx.paramCache = result.params
@@ -116,8 +137,20 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx.handlers = router.middlewares
-	ctx.NotFound()
+	notfoundHandlers := router.notfoundHandlers
+	for _, g := range router.groups {
+		if strings.HasPrefix(reqURI, g.prefix) {
+			notfoundHandlers = g.notfoundHandlers
+			break
+		}
+	}
+	if len(notfoundHandlers) > 0 {
+		ctx.handlers = append(router.middlewares, notfoundHandlers...)
+		ctx.Next()
+	} else {
+		ctx.handlers = router.middlewares
+		ctx.NotFound()
+	}
 }
 
 // Run run for http

@@ -79,6 +79,8 @@ func (ctx *Context) Abort() {
 // NotFound for 404
 func (ctx *Context) NotFound() {
 	ctx.StatusCode(http.StatusNotFound)
+	// http.NotFound(ctx.Response, ctx.Request)
+	ctx.Response.Write([]byte("404 page not found"))
 	ctx.Next()
 }
 

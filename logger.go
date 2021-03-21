@@ -24,7 +24,7 @@ type LoggerFormatterParam struct {
 }
 
 var defaultLogFormatter = func(param LoggerFormatterParam) string {
-	return fmt.Sprintf("[HS-INFO] %v\t%13s %6s %3d %10v %s \n",
+	return fmt.Sprintf("[INFO] %v\t%13s %6s %3d %10v %s \n",
 		param.TimeStamp.Format("2006/01/02 15:04:05"),
 		param.ClientIP,
 		param.Method,
