@@ -1,7 +1,6 @@
 package cotton
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,7 +13,7 @@ func TestAddHandleFunc(t *testing.T) {
 		router := NewRouter()
 		router.Get("hello", nil)
 	})
-	assert.PanicsWithError(t, "[:name] in path [/:name] conflicts with [/hello]", func() {
+	assert.PanicsWithError(t, "path [/:name] conflicts with [/hello]", func() {
 		router := NewRouter()
 		router.Get("/hello", handler)
 		router.Get("/:name", handler)
@@ -47,14 +46,21 @@ func TestAddHandleFunc(t *testing.T) {
 func TestGroup(t *testing.T) {
 	router := NewRouter()
 	g1 := router.Group("/v1")
-	passed := false
 	g1.Get("/a", func(c *Context) {
-		passed = true
+		c.String(http.StatusOK, "g1 a")
+	})
+	g1.Get("/b", func(c *Context) {
+		c.String(http.StatusBadGateway, "g1 b")
 	})
 
 	w := doRequest(&router, http.MethodGet, "/v1/a")
 
-	fmt.Println(w.Code, w.Body.String())
-	fmt.Println(passed)
-	assert.True(t, passed)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "g1 a", w.Body.String())
+
+	w = doRequest(&router, http.MethodGet, "/v1/b")
+
+	assert.Equal(t, http.StatusBadGateway, w.Code)
+	assert.Equal(t, "g1 b", w.Body.String())
+	// assert.True(t, false)
 }

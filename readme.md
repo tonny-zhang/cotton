@@ -13,6 +13,9 @@ Cotton is a web framework written by Go (Golang).
 		- [Querystring parameters](#querystring-parameters)
 		- [Using middleware](#using-middleware)
 		- [Using group](#using-group)
+	- [Benchmark](#benchmark)
+	- [Author](#author)
+	- [Acknowledgements](#acknowledgements)
 ## Installation
 To install Cotton package, you need to install Go and set your Go workspace first.
 1. The first need [Go](https://golang.org) installed
@@ -43,6 +46,7 @@ func main() {
 }
 ```
 ## Feature
+* Fast - see [Benchmarks](#benchmarks)
 * router group
 * parameters path
 * middleware
@@ -137,3 +141,14 @@ func main() {
 	r.Run(":8080")
 }
 ```
+
+## Benchmark
+the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench)repository
+
+## Author
+* [tonny zhang](github.com/tonny-zhang)
+
+## Acknowledgements
+This package is inspired by the following
+* [httprouter](github.com/xujiajun/gorouter)
+* [gin](https://github.com/gin-gonic/gin)

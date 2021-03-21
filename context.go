@@ -7,7 +7,16 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 )
+
+var ctxPool sync.Pool
+
+func init() {
+	ctxPool.New = func() interface{} {
+		return &Context{}
+	}
+}
 
 // Context context for request
 type Context struct {
@@ -22,6 +31,23 @@ type Context struct {
 	queryCache url.Values
 }
 
+func newContext(w http.ResponseWriter, r *http.Request) *Context {
+	// use sync.Pool
+	ctx := ctxPool.Get().(*Context)
+
+	// reset all property
+	ctx.Request = r
+	ctx.Response = w
+	ctx.statusCode = 0
+	ctx.indexAbort = -1
+	ctx.index = -1
+	ctx.handlers = ctx.handlers[0:0]
+	ctx.paramCache = nil
+	ctx.queryCache = nil
+
+	ctxPool.Put(ctx)
+	return ctx
+}
 func (ctx *Context) initQueryCache() {
 	if nil == ctx.queryCache {
 		if nil == ctx.Request {
@@ -38,6 +64,7 @@ func (ctx *Context) Next() {
 		ctx.index++
 		num := int8(len(ctx.handlers))
 		for ctx.index < num {
+			// NOTICE: there ctx will escape
 			ctx.handlers[ctx.index](ctx)
 			ctx.index++
 		}

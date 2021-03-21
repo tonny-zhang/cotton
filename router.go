@@ -49,9 +49,9 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	if _, ok := router.trees[method]; !ok {
 		router.trees[method] = newTree()
 	}
-	nodeAdded := router.trees[method].Add(path, nil)
+	nodeAdded := router.trees[method].add(path, nil)
 	nodeAdded.middleware = append(nodeAdded.middleware, router.middlewares...)
-	nodeAdded.handler = handler
+	// nodeAdded.handler = handler
 	nodeAdded.middleware = append(nodeAdded.middleware, handler)
 	debugPrintRoute(method, path, handler)
 }
@@ -90,20 +90,24 @@ func (router *Router) Patch(path string, handler HandlerFunc) {
 func (router *Router) Head(path string, handler HandlerFunc) {
 	router.addHandleFunc(http.MethodHead, path, handler)
 }
-func (router *Router) PrintTree(method string) {
-	router.trees[method].root.print(0)
-}
+
+// func (router *Router) PrintTree(method string) {
+// 	router.trees[method].root.print(0)
+// }
+
+// func (router *Router) Find(method, path string) {
+// 	if tree, ok := router.trees[method]; ok {
+// 		tree.root.find(path)
+// 	}
+// }
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := Context{
-		Request:  r,
-		Response: w,
-		index:    -1,
-	}
-	// ctx.index++
+	ctx := newContext(w, r)
+
 	r.Method = strings.ToUpper(r.Method)
 	if tree, ok := router.trees[r.Method]; ok {
-		result := tree.Find(r.URL.Path)
-		if result != nil {
+		result := tree.root.find(r.URL.Path)
+
+		if result.node != nil {
 			ctx.paramCache = result.params
 			ctx.handlers = result.node.middleware
 
