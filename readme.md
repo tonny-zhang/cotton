@@ -13,6 +13,8 @@ Cotton is a web framework written by Go (Golang).
 		- [Querystring parameters](#querystring-parameters)
 		- [Using middleware](#using-middleware)
 		- [Using group](#using-group)
+		- [Custom NotFound](#custom-notfound)
+		- [Custom group NotFound](#custom-group-notfound)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
@@ -47,9 +49,11 @@ func main() {
 ```
 ## Feature
 * Fast - see [Benchmarks](#benchmarks)
-* router group
 * parameters path
 * middleware
+* router group
+* custom not found
+* custom group not found
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
@@ -138,6 +142,35 @@ func main() {
 		ctx.String(http.StatusOK, "hello v2/a")
 	})
 
+	r.Run(":8080")
+}
+```
+
+### Custom NotFound
+```go
+func main() {
+	r := cotton.NewRouter()
+	r.NotFound(func(ctx *cotton.Context) {
+		ctx.String(http.StatusNotFound, "page ["+ctx.Request.RequestURI+"] not found")
+	})
+
+	r.Run(":8080")
+}
+```
+
+### Custom group NotFound
+```go
+func main() {
+	r := cotton.NewRouter()
+	r.NotFound(func(ctx *cotton.Context) {
+		ctx.String(http.StatusNotFound, "page ["+ctx.Request.RequestURI+"] not found")
+	})
+	g1 := r.Group("/v1/", func(ctx *cotton.Context) {
+		fmt.Println("g1 middleware")
+	})
+	g1.NotFound(func(ctx *cotton.Context) {
+		ctx.String(http.StatusNotFound, "group page ["+ctx.Request.RequestURI+"] not found")
+	})
 	r.Run(":8080")
 }
 ```

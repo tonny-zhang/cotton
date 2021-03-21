@@ -79,14 +79,11 @@ func main() {
 		ctx.String(http.StatusOK, "hello post "+ctx.Param("id"))
 	})
 
-	g1 := r.Group("/v1/:method", func(ctx *cotton.Context) {
+	g1 := r.Group("/v1/", func(ctx *cotton.Context) {
 		fmt.Println("g1 middleware")
 	})
-	g1.Use(func(ctx *cotton.Context) {
-		if ctx.Param("method") != "test" {
-			ctx.Abort()
-			ctx.String(http.StatusBadRequest, "no method test")
-		}
+	g1.NotFound(func(ctx *cotton.Context) {
+		ctx.String(http.StatusNotFound, "page ["+ctx.Request.RequestURI+"] not found")
 	})
 	{
 		g1.Get("/a", func(ctx *cotton.Context) {
@@ -98,7 +95,7 @@ func main() {
 			})
 		})
 	}
-	g2 := r.Group("/v2/:method")
+	g2 := r.Group("/v2/")
 	{
 		g2.Get("/a", func(ctx *cotton.Context) {
 			ctx.String(http.StatusOK, "g2 a "+ctx.Param("method"))
@@ -108,6 +105,25 @@ func main() {
 		})
 		g2.Get("/c/:id", func(ctx *cotton.Context) {
 			ctx.String(http.StatusOK, "g2 c "+ctx.Param("method")+" id = "+ctx.Param("id"))
+		})
+	}
+
+	g3 := r.Group("/v3/")
+	g3.Use(func(ctx *cotton.Context) {
+		if ctx.Param("method") != "test" {
+			ctx.Abort()
+			ctx.String(http.StatusBadRequest, "no method test")
+		}
+	})
+	{
+		g3.Get("/:method/a", func(ctx *cotton.Context) {
+			ctx.String(http.StatusOK, "g3 a "+ctx.Param("method"))
+		})
+		g3.Get("/:method/b", func(ctx *cotton.Context) {
+			ctx.String(http.StatusOK, "g3 b "+ctx.Param("method"))
+		})
+		g3.Get("/:method/c/:id", func(ctx *cotton.Context) {
+			ctx.String(http.StatusOK, "g3 c "+ctx.Param("method")+" id = "+ctx.Param("id"))
 		})
 	}
 

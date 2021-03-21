@@ -49,7 +49,7 @@ func RecoverWithWriter(writer io.Writer, handler ...HandlerFuncRecover) HandlerF
 
 				stack := stack(3)
 
-				fmt.Fprintf(writer, "[HS-RECOVER] %s\n%s\n", utils.TimeFormat(time.Now()), stack)
+				fmt.Fprintf(writer, "[RECOVER] %s\n%s\n", utils.TimeFormat(time.Now()), stack)
 			}
 		}()
 
