@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"net/http"
 
@@ -10,6 +12,7 @@ import (
 )
 
 func main() {
+
 	r := cotton.NewRouter()
 
 	// writer logger to file
@@ -39,6 +42,30 @@ func main() {
 		}
 		ctx.String(http.StatusInternalServerError, "[500 error]"+strErr)
 	}))
+
+	dir, _ := os.Getwd()
+	r.Group("/static/", cotton.LoggerWidthConf(cotton.LoggerConf{
+		Writer: os.Stdout,
+		Formatter: func(param cotton.LoggerFormatterParam, ctx *cotton.Context) string {
+			return fmt.Sprintf("[INFO-STATIC] %v\t %d %s\n",
+				param.TimeStamp.Format("2006/01/02 15:04:05"),
+				param.StatusCode,
+				filepath.Join(dir, ctx.Param("file")),
+			)
+		},
+	})).Get("/*file", func(ctx *cotton.Context) {
+		// file := filepath.Join(dir, ctx.Param("file"))
+
+		// http.ServeFile(ctx.Response, ctx.Request, file)
+		// // ctx.Response.GetStatusCode() for log
+		// fmt.Println(ctx.Response.GetStatusCode(), file)
+
+		http.StripPrefix("/static/", http.FileServer(http.Dir(dir))).ServeHTTP(ctx.Response, ctx.Request)
+		// http.StripPrefix("", http.FileServer(nil)).ServeHTTP()
+	})
+	gs := r.Group("/s/")
+	gs.StaticFile("/", dir, false)
+	r.StaticFile("/m/", dir, true)
 	r.Get("/panic", func(ctx *cotton.Context) {
 		// i := 0
 		// fmt.Println(1 / i)

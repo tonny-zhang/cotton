@@ -68,6 +68,12 @@ func TestAddConflicts(t *testing.T) {
 		tree.add("/:test/12", nil)
 		tree.add("/:test/*file", nil)
 	})
+
+	assert.PanicsWithError(t, "path [/s/*file] conflicts with [/*file]", func() {
+		tree := newTree()
+		tree.add("/*file", nil)
+		tree.add("/s/*file", nil)
+	})
 }
 
 // func TestTree1(t *testing.T) {

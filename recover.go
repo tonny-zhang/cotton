@@ -23,7 +23,7 @@ var (
 type HandlerFuncRecover func(ctx *Context, err interface{})
 
 var defaultHandlerRecover = func(ctx *Context, err interface{}) {
-	ctx.StatusCode(http.StatusInternalServerError)
+	ctx.Response.WriteHeader(http.StatusInternalServerError)
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
 }
 

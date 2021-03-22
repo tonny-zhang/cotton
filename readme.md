@@ -15,12 +15,13 @@ Cotton is a web framework written by Go (Golang).
 		- [Using group](#using-group)
 		- [Custom NotFound](#custom-notfound)
 		- [Custom group NotFound](#custom-group-notfound)
+	- [Custom static file](#custom-static-file)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
 ## Installation
 To install Cotton package, you need to install Go and set your Go workspace first.
-1. The first need [Go](https://golang.org) installed
+1. The first need [Go](https://golang.org) installed (go 1.13 or later)
 2. install Cotton
 ```sh
 go get -u github.com/tonny-zhang/cotton
@@ -54,6 +55,7 @@ func main() {
 * router group
 * custom not found
 * custom group not found
+* custom static file
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
@@ -172,6 +174,33 @@ func main() {
 		ctx.String(http.StatusNotFound, "group page ["+ctx.Request.RequestURI+"] not found")
 	})
 	r.Run(":8080")
+}
+```
+
+## Custom static file
+```go
+func main() {
+	dir, _ := os.Getwd()
+	r := cotton.NewRouter()
+
+	r.Use(cotton.Logger())
+	// use custom static file
+	r.Get("/v1/*file", func(ctx *cotton.Context) {
+		file := filepath.Join(dir, ctx.Param("file"))
+
+		http.ServeFile(ctx.Response, ctx.Request, file)
+	})
+
+	// use router.StaticFile
+	r.StaticFile("/s/", dir, true)  // list dir
+	r.StaticFile("/m/", dir, false) // 403 on list dir
+
+	g := r.Group("/g/", func(ctx *cotton.Context) {
+		fmt.Printf("status = %d param = %s, abspath = %s\n", ctx.Response.GetStatusCode(), ctx.Param("filepath"), filepath.Join(dir, ctx.Param("filepath")))
+	})
+	g.StaticFile("/", dir, true)
+
+	r.Run("")
 }
 ```
 

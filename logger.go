@@ -9,7 +9,7 @@ import (
 
 // LoggerConf config for logger
 type LoggerConf struct {
-	Formatter func(param LoggerFormatterParam) string
+	Formatter func(LoggerFormatterParam, *Context) string
 	Writer    io.Writer
 }
 
@@ -23,7 +23,7 @@ type LoggerFormatterParam struct {
 	Path       string
 }
 
-var defaultLogFormatter = func(param LoggerFormatterParam) string {
+var defaultLogFormatter = func(param LoggerFormatterParam, ctx *Context) string {
 	return fmt.Sprintf("[INFO] %v\t%13s %6s %3d %10v %s \n",
 		param.TimeStamp.Format("2006/01/02 15:04:05"),
 		param.ClientIP,
@@ -59,11 +59,11 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 			Method:     ctx.Request.Method,
 			Path:       ctx.Request.RequestURI,
 			TimeStamp:  time.Now(),
-			StatusCode: ctx.statusCode,
+			StatusCode: ctx.Response.GetStatusCode(),
 			ClientIP:   ctx.ClientIP(),
 		}
 
 		param.Latency = param.TimeStamp.Sub(timeStart)
-		fmt.Fprint(writer, formatter(param))
+		fmt.Fprint(writer, formatter(param, ctx))
 	}
 }

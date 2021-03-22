@@ -2,7 +2,6 @@ package cotton
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -20,9 +19,9 @@ func init() {
 
 // Context context for request
 type Context struct {
-	Request    *http.Request
-	Response   http.ResponseWriter
-	statusCode int
+	Request  *http.Request
+	Response responseWriter
+	// statusCode int
 	handlers   []HandlerFunc
 	index      int8
 	indexAbort int8
@@ -37,8 +36,11 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 
 	// reset all property
 	ctx.Request = r
-	ctx.Response = w
-	ctx.statusCode = 0
+	ctx.Response = &resWriter{
+		ResponseWriter: w,
+		statusCode:     http.StatusOK,
+	}
+	// ctx.statusCode = 0
 	ctx.indexAbort = -1
 	ctx.index = -1
 	ctx.handlers = ctx.handlers[0:0]
@@ -78,7 +80,8 @@ func (ctx *Context) Abort() {
 
 // NotFound for 404
 func (ctx *Context) NotFound() {
-	ctx.StatusCode(http.StatusNotFound)
+	// ctx.StatusCode(http.StatusNotFound)
+	ctx.Response.WriteHeader(http.StatusNotFound)
 	// http.NotFound(ctx.Response, ctx.Request)
 	ctx.Response.Write([]byte("404 page not found"))
 	ctx.Next()
@@ -114,19 +117,19 @@ func (ctx *Context) Param(key string) string {
 	return ""
 }
 
-// StatusCode set status code
-func (ctx *Context) StatusCode(statusCode int) {
-	if ctx.statusCode == 0 {
-		ctx.statusCode = statusCode
-		ctx.Response.WriteHeader(statusCode)
-	} else {
-		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
-	}
-}
+// // StatusCode set status code
+// func (ctx *Context) StatusCode(statusCode int) {
+// 	if ctx.Response.statusCode == 0 {
+// 		ctx.statusCode = statusCode
+// 		ctx.Response.WriteHeader(statusCode)
+// 	} else {
+// 		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
+// 	}
+// }
 
 // String response with string
 func (ctx *Context) String(code int, content string) {
-	ctx.StatusCode(code)
+	ctx.Response.WriteHeader(code)
 	ctx.Response.Write([]byte(content))
 }
 
@@ -138,7 +141,7 @@ func (ctx *Context) JSON(code int, val M) {
 	}
 
 	ctx.Response.Header().Add("Content-Type", "application/json; charset=utf-8")
-	ctx.StatusCode(code)
+	ctx.Response.WriteHeader(code)
 	ctx.Response.Write(b)
 }
 func (ctx *Context) getRequestHeader(key string) string {
