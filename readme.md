@@ -1,6 +1,6 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/tonny-zhang/cotton.svg)](https://pkg.go.dev/github.com/tonny-zhang/cotton) [![Release](https://img.shields.io/badge/release-v0.2.0-blue.svg?style=flat-square)](https://github.com/tonny-zhang/cotton/releases/tag/v0.2.0) [![Build Status](https://travis-ci.org/tonny-zhang/cotton.svg?branch=master)](https://travis-ci.org/tonny-zhang/cotton)
 
-Cotton is a web framework written by Go (Golang).
+Cotton is a RESTful web framework written by Go (Golang). It's fast and scalable.
 
 # Contents
 - [Contents](#contents)
@@ -205,8 +205,26 @@ func main() {
 ```
 
 ## Benchmarks
-the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository
-
+the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository, so performance of cotton is good!
+```
+   cottonRouter:     90888 bytes
+ BeegoMuxRouter:    107952 bytes
+     BoneRouter:    100712 bytes
+      ChiRouter:     75600 bytes
+     HttpRouter:     36016 bytes
+       trie-mux:    131568 bytes
+      GoRouter1:     83112 bytes
+goos: darwin
+goarch: amd64
+pkg: cottonbench
+cpu: Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz
+BenchmarkHttpRouterWithGithubAPI-8                 38082             31611 ns/op    13856 B/op        169 allocs/op
+BenchmarkCottonRouterWithGithubAPI-8               34648             35496 ns/op        0 B/op          0 allocs/op
+BenchmarkBeegoMuxRouterWithGithubAPI-8              9888            120716 ns/op   139056 B/op       1050 allocs/op
+BenchmarkBoneRouterWithGithubAPI-8                   640           1869374 ns/op   744018 B/op       8893 allocs/op
+BenchmarkTrieMuxRouterWithGithubAPI-8              17448             68756 ns/op    66624 B/op        543 allocs/op
+BenchmarkGoRouter1WithGithubAPI-8                     60          18084650 ns/op 14432841 B/op     132968 allocs/op
+```
 ## Author
 * [tonny zhang](github.com/tonny-zhang)
 
