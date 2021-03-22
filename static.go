@@ -2,7 +2,6 @@ package cotton
 
 import (
 	"fmt"
-	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,7 +17,7 @@ type noReaddirFile struct {
 	http.File
 }
 
-func (file *noReaddirFile) Readdir(count int) ([]fs.FileInfo, error) {
+func (file *noReaddirFile) Readdir(count int) ([]os.FileInfo, error) {
 	return nil, nil
 }
 
