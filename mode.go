@@ -2,14 +2,15 @@ package cotton
 
 const (
 	// ModeDebug debug mode
-	ModeDebug = "debug"
+	ModeDebug = iota
 	// ModeTest test mode
-	ModeTest = "test"
+	ModeTest
+	ModeProduct
 )
 
 var modeRuning = ModeDebug
 
 // SetMode set mode
-func SetMode(mode string) {
+func SetMode(mode int) {
 	modeRuning = mode
 }

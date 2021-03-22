@@ -74,6 +74,12 @@ func (t *tree) add(path string, handler HandlerFunc) *node {
 				if !ok {
 					child = nodeCurrent.children[keyParam]
 					numParams++
+				} else {
+					for _, nc := range nodeCurrent.children {
+						if nc.nodeType == nodeCatchAll {
+							panic(fmt.Errorf("path [%s] conflicts with [%s]", path, nc.fullpath))
+						}
+					}
 				}
 				nodeCurrent = child
 				start = i + 1

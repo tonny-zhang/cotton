@@ -155,6 +155,9 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Run run for http
 func (router *Router) Run(addr string) {
+	if addr == "" {
+		addr = ":5000"
+	}
 	debugPrint("Listening and serving HTTP on %s\n", addr)
 	http.ListenAndServe(addr, router)
 }
