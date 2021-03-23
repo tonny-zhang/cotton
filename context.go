@@ -9,6 +9,10 @@ import (
 	"sync"
 )
 
+var (
+	htmlContentType = "text/html; charset=utf-8"
+	jsonContentType = "application/json; charset=utf-8"
+)
 var ctxPool sync.Pool
 
 func init() {
@@ -127,22 +131,29 @@ func (ctx *Context) Param(key string) string {
 // 	}
 // }
 
-// String response with string
+// response with string
 func (ctx *Context) String(code int, content string) {
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write([]byte(content))
 }
 
-// JSON response with json
+// response with json
 func (ctx *Context) JSON(code int, val M) {
 	b, e := json.Marshal(val)
 	if e != nil {
 		panic(e)
 	}
 
-	ctx.Response.Header().Add("Content-Type", "application/json; charset=utf-8")
+	ctx.Response.Header().Add("Content-Type", jsonContentType)
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write(b)
+}
+
+// response with html
+func (ctx *Context) HTML(code int, html string) {
+	ctx.Response.Header().Add("Content-Type", htmlContentType)
+	ctx.Response.WriteHeader(code)
+	ctx.Response.Write([]byte(html))
 }
 func (ctx *Context) getRequestHeader(key string) string {
 	if nil != ctx.Request {
