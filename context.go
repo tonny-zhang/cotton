@@ -58,7 +58,7 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 }
 func (ctx *Context) initQueryCache() {
 	if nil == ctx.queryCache {
-		if nil == ctx.Request {
+		if nil != ctx.Request {
 			ctx.queryCache = ctx.Request.URL.Query()
 		} else {
 			ctx.queryCache = url.Values{}
@@ -184,4 +184,7 @@ func (ctx *Context) ClientIP() string {
 	}
 
 	return "no-ip"
+}
+func (ctx *Context) Redirect(code int, location string) {
+	http.Redirect(ctx.Response, ctx.Request, location, code)
 }
