@@ -14,6 +14,7 @@ type HandlerFunc func(ctx *Context)
 // Router router struct
 type Router struct {
 	prefix      string
+	hasHandled  bool
 	trees       map[string]*tree
 	middlewares []HandlerFunc
 
@@ -38,11 +39,17 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	if len(path) == 0 || path[0] != '/' {
 		panic(fmt.Errorf("group [%s] must start with /", path))
 	}
-	if strings.Index(path, ":") > -1 || strings.Index(path, "*") > -1 {
+	if strings.Index(path, "*") > -1 {
 		panic(fmt.Errorf("group path [%s] can not has parameter", path))
 	}
+	prefix := utils.CleanPath(path + "/")
+	for _, g := range router.groups {
+		if matchGroup(g, prefix) {
+			panic(fmt.Errorf("group [%s] conflicts with [%s]", prefix, g.prefix))
+		}
+	}
 	r := &Router{
-		prefix:           utils.CleanPath(path + "/"),
+		prefix:           prefix,
 		trees:            router.trees,
 		middlewares:      router.middlewares,
 		notfoundHandlers: router.notfoundHandlers,
@@ -50,6 +57,25 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	r.middlewares = append(r.middlewares, handler...)
 	router.groups = append(router.groups, r)
 	return r
+}
+func matchGroup(router *Router, path string) bool {
+	if len(router.prefix) > 0 {
+		arrRP := strings.Split(router.prefix, "/")
+		arrPath := strings.Split(path, "/")
+		if len(arrPath) < len(arrRP) {
+			return false
+		}
+
+		for i, j := 0, len(arrRP); i < j; i++ {
+			if strings.Index(arrRP[i], ":") > -1 || strings.Index(arrPath[i], ":") > -1 {
+				continue
+			}
+			if arrRP[i] != arrPath[i] {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // NotFound custom NotFoundHandler
@@ -73,6 +99,7 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	nodeAdded.middleware = append(nodeAdded.middleware, router.middlewares...)
 	// nodeAdded.handler = handler
 	nodeAdded.middleware = append(nodeAdded.middleware, handler)
+	router.hasHandled = true
 	debugPrintRoute(method, path, handler)
 }
 
@@ -139,7 +166,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	notfoundHandlers := router.notfoundHandlers
 	for _, g := range router.groups {
-		if strings.HasPrefix(reqURI, g.prefix) {
+		if matchGroup(g, reqURI) {
 			notfoundHandlers = g.notfoundHandlers
 			break
 		}
@@ -158,6 +185,15 @@ func (router *Router) Run(addr string) {
 	if addr == "" {
 		addr = ":5000"
 	}
+	var groupsNew []*Router
+	for _, g := range router.groups {
+		if g.hasHandled {
+			groupsNew = append(groupsNew, g)
+		} else {
+			debugPrint("group [%s] has no handler, will be discarded", g.prefix)
+		}
+	}
+	router.groups = groupsNew
 	debugPrint("Listening and serving HTTP on %s\n", addr)
 	http.ListenAndServe(addr, router)
 }

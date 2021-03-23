@@ -135,7 +135,7 @@ func main() {
 		})
 	}
 
-	g3 := r.Group("/v3/")
+	g3 := r.Group("/v3/:method/")
 	g3.Use(func(ctx *cotton.Context) {
 		if ctx.Param("method") != "test" {
 			ctx.Abort()
@@ -143,16 +143,18 @@ func main() {
 		}
 	})
 	{
-		g3.Get("/:method/a", func(ctx *cotton.Context) {
+		g3.Get("/a", func(ctx *cotton.Context) {
 			ctx.String(http.StatusOK, "g3 a "+ctx.Param("method"))
 		})
-		g3.Get("/:method/b", func(ctx *cotton.Context) {
+		g3.Get("/b", func(ctx *cotton.Context) {
 			ctx.String(http.StatusOK, "g3 b "+ctx.Param("method"))
 		})
-		g3.Get("/:method/c/:id", func(ctx *cotton.Context) {
+		g3.Get("/c/:id", func(ctx *cotton.Context) {
 			ctx.String(http.StatusOK, "g3 c "+ctx.Param("method")+" id = "+ctx.Param("id"))
 		})
 	}
+
+	r.Group("/a/b")
 
 	// r.PrintTree(http.MethodGet)
 	r.Run(":5000")
