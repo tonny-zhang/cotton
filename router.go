@@ -60,6 +60,9 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 }
 func matchGroup(router *Router, path string) bool {
 	if len(router.prefix) > 0 {
+		if strings.HasPrefix(path, router.prefix) {
+			return true
+		}
 		arrRP := strings.Split(router.prefix, "/")
 		arrPath := strings.Split(path, "/")
 		if len(arrPath) < len(arrRP) {
@@ -69,6 +72,9 @@ func matchGroup(router *Router, path string) bool {
 		for i, j := 0, len(arrRP); i < j; i++ {
 			if strings.Index(arrRP[i], ":") > -1 || strings.Index(arrPath[i], ":") > -1 {
 				continue
+			}
+			if i == j-1 && arrRP[i] == "" {
+				break
 			}
 			if arrRP[i] != arrPath[i] {
 				return false
@@ -166,6 +172,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	notfoundHandlers := router.notfoundHandlers
 	for _, g := range router.groups {
+		fmt.Println(g.prefix, reqURI, matchGroup(g, reqURI))
 		if matchGroup(g, reqURI) {
 			notfoundHandlers = g.notfoundHandlers
 			break

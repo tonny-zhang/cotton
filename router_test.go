@@ -143,3 +143,26 @@ func TestGroupPanic(t *testing.T) {
 		router.Group("/static")
 	})
 }
+
+func TestMatchGroup(t *testing.T) {
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/",
+	}, "/v1/test"))
+
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/",
+	}, "/v2/test"))
+
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test/"))
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test/abc"))
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test"))
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v2/test/"))
+}
