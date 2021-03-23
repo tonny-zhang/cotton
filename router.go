@@ -161,6 +161,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	r.Method = strings.ToUpper(r.Method)
 	reqURI := r.URL.Path
+
 	if tree, ok := router.trees[r.Method]; ok {
 		result := tree.root.find(reqURI)
 

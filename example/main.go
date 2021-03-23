@@ -154,7 +154,11 @@ func main() {
 		})
 	}
 
-	r.Group("/a/b")
+	r.Group("/nohandle")
+	r.Get("/redirect", func(ctx *cotton.Context) {
+		urlto := ctx.GetDefaultQuery("url", "https://www.baidu.com")
+		ctx.Redirect(302, urlto)
+	})
 
 	// r.PrintTree(http.MethodGet)
 	r.Run(":5000")
