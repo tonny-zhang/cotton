@@ -15,7 +15,7 @@ Cotton is a RESTful web framework written by Go (Golang). It's fast and scalable
 		- [Using group](#using-group)
 		- [Custom NotFound](#custom-notfound)
 		- [Custom group NotFound](#custom-group-notfound)
-	- [Custom static file](#custom-static-file)
+		- [Custom static file](#custom-static-file)
 		- [Use template](#use-template)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
@@ -179,7 +179,7 @@ func main() {
 }
 ```
 
-## Custom static file
+### Custom static file
 ```go
 func main() {
 	dir, _ := os.Getwd()
