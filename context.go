@@ -9,6 +9,10 @@ import (
 	"sync"
 )
 
+var (
+	htmlContentType = "text/html; charset=utf-8"
+	jsonContentType = "application/json; charset=utf-8"
+)
 var ctxPool sync.Pool
 
 func init() {
@@ -28,9 +32,11 @@ type Context struct {
 
 	paramCache map[string]string
 	queryCache url.Values
+
+	router *Router
 }
 
-func newContext(w http.ResponseWriter, r *http.Request) *Context {
+func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context {
 	// use sync.Pool
 	ctx := ctxPool.Get().(*Context)
 
@@ -40,7 +46,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
 	}
-	// ctx.statusCode = 0
+	ctx.router = router
 	ctx.indexAbort = -1
 	ctx.index = -1
 	ctx.handlers = ctx.handlers[0:0]
@@ -127,22 +133,29 @@ func (ctx *Context) Param(key string) string {
 // 	}
 // }
 
-// String response with string
+// response with string
 func (ctx *Context) String(code int, content string) {
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write([]byte(content))
 }
 
-// JSON response with json
+// response with json
 func (ctx *Context) JSON(code int, val M) {
 	b, e := json.Marshal(val)
 	if e != nil {
 		panic(e)
 	}
 
-	ctx.Response.Header().Add("Content-Type", "application/json; charset=utf-8")
+	ctx.Response.Header().Add("Content-Type", jsonContentType)
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write(b)
+}
+
+// response with html
+func (ctx *Context) HTML(code int, html string) {
+	ctx.Response.Header().Add("Content-Type", htmlContentType)
+	ctx.Response.WriteHeader(code)
+	ctx.Response.Write([]byte(html))
 }
 func (ctx *Context) getRequestHeader(key string) string {
 	if nil != ctx.Request {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -8,6 +9,9 @@ import (
 
 	"github.com/tonny-zhang/cotton"
 )
+
+//go:embed ui/*
+var uiEmbed embed.FS
 
 func main() {
 	dir, _ := os.Getwd()
@@ -29,6 +33,12 @@ func main() {
 		fmt.Printf("status = %d param = %s, abspath = %s\n", ctx.Response.GetStatusCode(), ctx.Param("filepath"), filepath.Join(dir, ctx.Param("filepath")))
 	})
 	g.StaticFile("/", dir, true)
+
+	r.Get("/ui/*file", func(ctx *cotton.Context) {
+
+		fileServer := http.StripPrefix("", http.FileServer(http.FS(uiEmbed)))
+		fileServer.ServeHTTP(ctx.Response, ctx.Request)
+	})
 
 	r.Run("")
 }

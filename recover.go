@@ -24,7 +24,8 @@ type HandlerFuncRecover func(ctx *Context, err interface{})
 
 var defaultHandlerRecover = func(ctx *Context, err interface{}) {
 	ctx.Response.WriteHeader(http.StatusInternalServerError)
-	ctx.Response.WriteHeader(http.StatusInternalServerError)
+
+	// ctx.Response.Write([]byte(err.(error).Error()))
 }
 
 // Recover recover middleware

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"text/template"
 
 	"github.com/tonny-zhang/cotton/utils"
 )
@@ -21,6 +22,8 @@ type Router struct {
 	notfoundHandlers []HandlerFunc
 
 	groups []*Router
+
+	globalTemplate *template.Template
 }
 
 // NewRouter new router
@@ -154,7 +157,7 @@ func (router *Router) Head(path string, handler HandlerFunc) {
 // 	}
 // }
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := newContext(w, r)
+	ctx := newContext(w, r, router)
 
 	r.Method = strings.ToUpper(r.Method)
 	reqURI := r.URL.Path
