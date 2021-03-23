@@ -32,9 +32,11 @@ type Context struct {
 
 	paramCache map[string]string
 	queryCache url.Values
+
+	router *Router
 }
 
-func newContext(w http.ResponseWriter, r *http.Request) *Context {
+func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context {
 	// use sync.Pool
 	ctx := ctxPool.Get().(*Context)
 
@@ -44,7 +46,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
 	}
-	// ctx.statusCode = 0
+	ctx.router = router
 	ctx.indexAbort = -1
 	ctx.index = -1
 	ctx.handlers = ctx.handlers[0:0]
