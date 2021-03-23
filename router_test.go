@@ -102,19 +102,67 @@ func TestGroup(t *testing.T) {
 	// assert.True(t, false)
 }
 func TestGroupPanic(t *testing.T) {
-	router := NewRouter()
 	assert.PanicsWithError(t, "group [] must start with /", func() {
+		router := NewRouter()
 		router.Group("")
 	})
 	assert.PanicsWithError(t, "group [abc] must start with /", func() {
+		router := NewRouter()
 		router.Group("abc")
 	})
 
-	assert.PanicsWithError(t, "group path [/:test] can not has parameter", func() {
-		router.Group("/:test")
-	})
-
 	assert.PanicsWithError(t, "group [/a/] can not group again", func() {
+		router := NewRouter()
 		router.Group("/a").Group("/a")
 	})
+
+	assert.PanicsWithError(t, "group [/a/] conflicts with [/a/]", func() {
+		router := NewRouter()
+		router.Group("/a")
+		router.Group("/a")
+	})
+	assert.PanicsWithError(t, "group [/b/] conflicts with [/:method/]", func() {
+		router := NewRouter()
+		router.Group("/:method")
+		router.Group("/b")
+	})
+	assert.PanicsWithError(t, "group [/:method/] conflicts with [/a/]", func() {
+		router := NewRouter()
+		router.Group("/a")
+		router.Group("/:method")
+	})
+	assert.PanicsWithError(t, "group [/:id/] conflicts with [/:method/]", func() {
+		router := NewRouter()
+		router.Group("/:method")
+		router.Group("/:id")
+	})
+
+	assert.NotPanics(t, func() {
+		router := NewRouter()
+		router.Group("/s")
+		router.Group("/static")
+	})
+}
+
+func TestMatchGroup(t *testing.T) {
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/",
+	}, "/v1/test"))
+
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/",
+	}, "/v2/test"))
+
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test/"))
+	assert.True(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test/abc"))
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v1/test"))
+	assert.False(t, matchGroup(&Router{
+		prefix: "/v1/:method/",
+	}, "/v2/test/"))
 }
