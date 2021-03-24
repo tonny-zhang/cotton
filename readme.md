@@ -17,6 +17,7 @@ Cotton is a RESTful web framework written by Go (Golang). It's fast and scalable
 		- [Custom group NotFound](#custom-group-notfound)
 		- [Custom static file](#custom-static-file)
 		- [Use template](#use-template)
+		- [PostForm](#postform)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
@@ -58,6 +59,7 @@ func main() {
 * custom group not found
 * custom static file
 * [template support](#use-template)
+* [post form](#postform)
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
@@ -212,6 +214,16 @@ func main() {
 > use `router.LoadTemplates` and `ctx.Render`; 
 > go to [example/template](./example/template/) for detail
 
+### PostForm
+> use method
+> * `ctx.GetPostForm` 
+> * `ctx.GetPostFormArray` 
+> * `ctx.GetPostFormMap` 
+> * `ctx.GetPostFormFile` 
+> * `ctx.GetPostFormArray`
+> * `ctx.SavePostFormFile`
+> 
+> go to [example/post/](./example/post/) for detail
 ## Benchmarks
 the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository, so performance of cotton is good!
 ```
