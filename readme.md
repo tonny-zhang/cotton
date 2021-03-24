@@ -83,14 +83,14 @@ func main() {
 	// /user			=> 	no
 	// /user/			=> 	no
 	r.Get("/user/:name", func(c *cotton.Context) {
-		c.String("hello "+c.Param("name"))
+		c.String(200, "hello "+c.Param("name"))
 	})
 
 	// /file/test		=> 	match
 	// /file/a/b/c		=> 	match
 	// /room/			=> 	no
 	r.Get("/file/*file", func(c *cotton.Context) {
-		c.String("file = "+c.Param("file"))
+		c.String(200, "file = "+c.Param("file"))
 	})
 
 	r.Run(":8080")
@@ -101,13 +101,16 @@ func main() {
 ```go
 func main() {
 	r := cotton.NewRouter()
-	r.Get("/hello", func(c *cotton.Context) {
-		name := c.GetQuery("name")
-		first := c.GetDefaultQuery("first", "first default value")
+	r.Get("/get", func(ctx *cotton.Context) {
+		name := ctx.GetQuery("name")
+		first := ctx.GetDefaultQuery("first", "first default value")
 
-		c.String("hello "+name+" "+first)
+		ids := ctx.GetQueryArray("ids[]")
+		m, _ := ctx.GetQueryMap("info")
+		ctx.String(http.StatusOK, fmt.Sprintf("name = %s, first = %s, ids = %v, info = %v", name, first, ids, m))
 	})
-	r.Run(":8080")
+
+	r.Run("")
 }
 ```
 
@@ -120,7 +123,7 @@ func main() {
 	r.Use(cotton.Logger())
 
 	r.Get("/hello", func(c *cotton.Context) {
-		c.String("hello")
+		c.String(200, "hello")
 	})
 	r.Run(":8080")
 }
@@ -138,12 +141,12 @@ func main() {
 	})
 	{
 		g1.Get("/a", func(ctx *cotton.Context) {
-			ctx.String(http.StatusOK, "g1 a")
+			ctx.String(200, http.StatusOK, "g1 a")
 		})
 	}
 
 	r.Get("/v2/a", func(ctx *cotton.Context) {
-		ctx.String(http.StatusOK, "hello v2/a")
+		ctx.String(200, http.StatusOK, "hello v2/a")
 	})
 
 	r.Run(":8080")

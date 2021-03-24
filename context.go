@@ -107,6 +107,32 @@ func (ctx *Context) GetDefaultQuery(key, defaultVal string) string {
 	return defaultVal
 }
 
+// url?list[]=1&list[]=2
+// 		GetQueryArray("list[]")	=> ["1", "2"]
+func (ctx *Context) GetQueryArray(key string) (list []string) {
+	ctx.initQueryCache()
+	if v, ok := ctx.queryCache[key]; ok {
+		return v
+	}
+	return
+}
+func getValue(m map[string][]string, key string) (dicts map[string]string, exists bool) {
+	dicts = make(map[string]string)
+	for k, v := range m {
+		if i := strings.IndexByte(k, '['); i > 0 && k[:i] == key {
+			if j := strings.IndexByte(k, ']'); j > 2 {
+				dicts[k[i+1:j]] = v[0]
+				exists = true
+			}
+		}
+	}
+	return
+}
+func (ctx *Context) GetQueryMap(key string) (dicts map[string]string, exists bool) {
+	ctx.initQueryCache()
+	return getValue(ctx.queryCache, key)
+}
+
 // Param returns the value of the URL param.
 //     router.GET("/user/:id", func(c *gin.Context) {
 //         // a GET request to /user/john
