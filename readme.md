@@ -15,8 +15,9 @@ Cotton is a RESTful web framework written by Go (Golang). It's fast and scalable
 		- [Using group](#using-group)
 		- [Custom NotFound](#custom-notfound)
 		- [Custom group NotFound](#custom-group-notfound)
-	- [Custom static file](#custom-static-file)
+		- [Custom static file](#custom-static-file)
 		- [Use template](#use-template)
+		- [PostForm](#postform)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
@@ -58,6 +59,7 @@ func main() {
 * custom group not found
 * custom static file
 * [template support](#use-template)
+* [post form](#postform)
 
 ## API Example
 You can find a number of ready-to-run examples at [examples folder](./example)
@@ -83,14 +85,14 @@ func main() {
 	// /user			=> 	no
 	// /user/			=> 	no
 	r.Get("/user/:name", func(c *cotton.Context) {
-		c.String("hello "+c.Param("name"))
+		c.String(200, "hello "+c.Param("name"))
 	})
 
 	// /file/test		=> 	match
 	// /file/a/b/c		=> 	match
 	// /room/			=> 	no
 	r.Get("/file/*file", func(c *cotton.Context) {
-		c.String("file = "+c.Param("file"))
+		c.String(200, "file = "+c.Param("file"))
 	})
 
 	r.Run(":8080")
@@ -101,13 +103,16 @@ func main() {
 ```go
 func main() {
 	r := cotton.NewRouter()
-	r.Get("/hello", func(c *cotton.Context) {
-		name := c.GetQuery("name")
-		first := c.GetDefaultQuery("first", "first default value")
+	r.Get("/get", func(ctx *cotton.Context) {
+		name := ctx.GetQuery("name")
+		first := ctx.GetDefaultQuery("first", "first default value")
 
-		c.String("hello "+name+" "+first)
+		ids := ctx.GetQueryArray("ids[]")
+		m, _ := ctx.GetQueryMap("info")
+		ctx.String(http.StatusOK, fmt.Sprintf("name = %s, first = %s, ids = %v, info = %v", name, first, ids, m))
 	})
-	r.Run(":8080")
+
+	r.Run("")
 }
 ```
 
@@ -120,7 +125,7 @@ func main() {
 	r.Use(cotton.Logger())
 
 	r.Get("/hello", func(c *cotton.Context) {
-		c.String("hello")
+		c.String(200, "hello")
 	})
 	r.Run(":8080")
 }
@@ -138,12 +143,12 @@ func main() {
 	})
 	{
 		g1.Get("/a", func(ctx *cotton.Context) {
-			ctx.String(http.StatusOK, "g1 a")
+			ctx.String(200, http.StatusOK, "g1 a")
 		})
 	}
 
 	r.Get("/v2/a", func(ctx *cotton.Context) {
-		ctx.String(http.StatusOK, "hello v2/a")
+		ctx.String(200, http.StatusOK, "hello v2/a")
 	})
 
 	r.Run(":8080")
@@ -179,7 +184,7 @@ func main() {
 }
 ```
 
-## Custom static file
+### Custom static file
 ```go
 func main() {
 	dir, _ := os.Getwd()
@@ -209,6 +214,16 @@ func main() {
 > use `router.LoadTemplates` and `ctx.Render`; 
 > go to [example/template](./example/template/) for detail
 
+### PostForm
+> use method
+> * `ctx.GetPostForm` 
+> * `ctx.GetPostFormArray` 
+> * `ctx.GetPostFormMap` 
+> * `ctx.GetPostFormFile` 
+> * `ctx.GetPostFormArray`
+> * `ctx.SavePostFormFile`
+> 
+> go to [example/post/](./example/post/) for detail
 ## Benchmarks
 the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository, so performance of cotton is good!
 ```

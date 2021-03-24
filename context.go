@@ -2,9 +2,13 @@ package cotton
 
 import (
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -13,6 +17,11 @@ var (
 	htmlContentType = "text/html; charset=utf-8"
 	jsonContentType = "application/json; charset=utf-8"
 )
+
+const (
+	defaultMultipartMemory = 32 << 20 // 32 MB
+)
+
 var ctxPool sync.Pool
 
 func init() {
@@ -30,8 +39,9 @@ type Context struct {
 	index      int8
 	indexAbort int8
 
-	paramCache map[string]string
-	queryCache url.Values
+	paramCache    map[string]string
+	queryCache    url.Values
+	postFormCache url.Values
 
 	router *Router
 }
@@ -62,6 +72,21 @@ func (ctx *Context) initQueryCache() {
 			ctx.queryCache = ctx.Request.URL.Query()
 		} else {
 			ctx.queryCache = url.Values{}
+		}
+	}
+}
+func (ctx *Context) initPostFormCache() {
+	if nil == ctx.postFormCache {
+		if nil != ctx.Request {
+			if e := ctx.Request.ParseMultipartForm(defaultMultipartMemory); e != nil {
+				if e != http.ErrNotMultipart {
+					panic(e)
+				}
+			}
+
+			ctx.postFormCache = ctx.Request.PostForm
+		} else {
+			ctx.postFormCache = url.Values{}
 		}
 	}
 }
@@ -107,6 +132,82 @@ func (ctx *Context) GetDefaultQuery(key, defaultVal string) string {
 	return defaultVal
 }
 
+// url?list[]=1&list[]=2
+// 		GetQueryArray("list[]")	=> ["1", "2"]
+func (ctx *Context) GetQueryArray(key string) (list []string) {
+	ctx.initQueryCache()
+	if v, ok := ctx.queryCache[key]; ok {
+		return v
+	}
+	return
+}
+func getValue(m map[string][]string, key string) (dicts map[string]string, exists bool) {
+	dicts = make(map[string]string)
+	for k, v := range m {
+		if i := strings.IndexByte(k, '['); i > 0 && k[:i] == key {
+			if j := strings.IndexByte(k, ']'); j > 2 {
+				dicts[k[i+1:j]] = v[0]
+				exists = true
+			}
+		}
+	}
+	return
+}
+func (ctx *Context) GetQueryMap(key string) (dicts map[string]string, exists bool) {
+	ctx.initQueryCache()
+	return getValue(ctx.queryCache, key)
+}
+
+func (ctx *Context) GetPostForm(key string) string {
+	ctx.initPostFormCache()
+	if v, ok := ctx.postFormCache[key]; ok {
+		return v[0]
+	}
+	return ""
+}
+func (ctx *Context) GetPostFormArray(key string) []string {
+	ctx.initPostFormCache()
+	if v, ok := ctx.postFormCache[key]; ok {
+		return v
+	}
+	return []string{}
+}
+func (ctx *Context) GetPostFormMap(key string) (dicts map[string]string, exists bool) {
+	ctx.initPostFormCache()
+	return getValue(ctx.postFormCache, key)
+}
+func (ctx *Context) GetPostFormFile(key string) *multipart.FileHeader {
+	list := ctx.GetPostFormFileArray(key)
+	if len(list) > 0 {
+		return list[0]
+	}
+	return nil
+}
+func (ctx *Context) GetPostFormFileArray(key string) (list []*multipart.FileHeader) {
+	ctx.initPostFormCache()
+	if ctx.Request.MultipartForm != nil {
+		list, _ = ctx.Request.MultipartForm.File[key]
+	}
+	return
+}
+func (ctx *Context) SavePostFormFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	os.MkdirAll(filepath.Dir(dst), 0755)
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
+
 // Param returns the value of the URL param.
 //     router.GET("/user/:id", func(c *gin.Context) {
 //         // a GET request to /user/john
@@ -122,16 +223,6 @@ func (ctx *Context) Param(key string) string {
 
 	return ""
 }
-
-// // StatusCode set status code
-// func (ctx *Context) StatusCode(statusCode int) {
-// 	if ctx.Response.statusCode == 0 {
-// 		ctx.statusCode = statusCode
-// 		ctx.Response.WriteHeader(statusCode)
-// 	} else {
-// 		fmt.Printf("warning: alread set statusCode [%d], can't set [%d] again\n", ctx.statusCode, statusCode)
-// 	}
-// }
 
 // response with string
 func (ctx *Context) String(code int, content string) {
@@ -157,7 +248,7 @@ func (ctx *Context) HTML(code int, html string) {
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write([]byte(html))
 }
-func (ctx *Context) getRequestHeader(key string) string {
+func (ctx *Context) GetRequestHeader(key string) string {
 	if nil != ctx.Request {
 		return ctx.Request.Header.Get(key)
 	}
@@ -166,16 +257,16 @@ func (ctx *Context) getRequestHeader(key string) string {
 
 // ClientIP get client ip
 func (ctx *Context) ClientIP() string {
-	clientIP := ctx.getRequestHeader("X-Forwarded-For")
+	clientIP := ctx.GetRequestHeader("X-Forwarded-For")
 	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
 	if clientIP == "" {
-		clientIP = strings.TrimSpace(ctx.getRequestHeader("X-Real-Ip"))
+		clientIP = strings.TrimSpace(ctx.GetRequestHeader("X-Real-Ip"))
 	}
 	if clientIP != "" {
 		return clientIP
 	}
 
-	if addr := ctx.getRequestHeader("X-Appengine-Remote-Addr"); addr != "" {
+	if addr := ctx.GetRequestHeader("X-Appengine-Remote-Addr"); addr != "" {
 		return addr
 	}
 
