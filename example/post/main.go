@@ -12,8 +12,6 @@ import (
 )
 
 func main() {
-	fmt.Println(os.Args)
-	fmt.Println()
 	r := cotton.NewRouter()
 	// Content-Type is "application/x-www-form-urlencoded" or "multipart/form-data"
 	r.Post("/post", func(ctx *cotton.Context) {

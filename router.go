@@ -176,7 +176,6 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	notfoundHandlers := router.notfoundHandlers
 	for _, g := range router.groups {
-		fmt.Println(g.prefix, reqURI, matchGroup(g, reqURI))
 		if matchGroup(g, reqURI) {
 			notfoundHandlers = g.notfoundHandlers
 			break
