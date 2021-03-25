@@ -246,7 +246,7 @@ BenchmarkTrieMuxRouterWithGithubAPI-8              17448             68756 ns/op
 BenchmarkGoRouter1WithGithubAPI-8                     60          18084650 ns/op 14432841 B/op     132968 allocs/op
 ```
 ## Author
-* [tonny zhang](github.com/tonny-zhang)
+* [tonny zhang](https://github.com/tonny-zhang)
 
 ## Acknowledgements
 This package is inspired by the following
