@@ -28,7 +28,7 @@ func getTplFiles(dir string, ext string) (list []string, err error) {
 	return
 }
 
-// load template files
+// LoadTemplates load template files
 //
 // funcs is functions register to template
 // example:

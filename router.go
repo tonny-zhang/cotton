@@ -156,6 +156,8 @@ func (router *Router) Head(path string, handler HandlerFunc) {
 // 		tree.root.find(path)
 // 	}
 // }
+
+// ServeHTTP serve http handler
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := newContext(w, r, router)
 

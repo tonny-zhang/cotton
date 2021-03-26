@@ -132,6 +132,7 @@ func (ctx *Context) GetDefaultQuery(key, defaultVal string) string {
 	return defaultVal
 }
 
+// GetQueryArray get query array
 // url?list[]=1&list[]=2
 // 		GetQueryArray("list[]")	=> ["1", "2"]
 func (ctx *Context) GetQueryArray(key string) (list []string) {
@@ -153,11 +154,14 @@ func getValue(m map[string][]string, key string) (dicts map[string]string, exist
 	}
 	return
 }
+
+// GetQueryMap get query map
 func (ctx *Context) GetQueryMap(key string) (dicts map[string]string, exists bool) {
 	ctx.initQueryCache()
 	return getValue(ctx.queryCache, key)
 }
 
+// GetPostForm get postform param
 func (ctx *Context) GetPostForm(key string) string {
 	ctx.initPostFormCache()
 	if v, ok := ctx.postFormCache[key]; ok {
@@ -165,6 +169,8 @@ func (ctx *Context) GetPostForm(key string) string {
 	}
 	return ""
 }
+
+// GetPostFormArray get postform param array
 func (ctx *Context) GetPostFormArray(key string) []string {
 	ctx.initPostFormCache()
 	if v, ok := ctx.postFormCache[key]; ok {
@@ -172,10 +178,14 @@ func (ctx *Context) GetPostFormArray(key string) []string {
 	}
 	return []string{}
 }
+
+// GetPostFormMap get postform param map
 func (ctx *Context) GetPostFormMap(key string) (dicts map[string]string, exists bool) {
 	ctx.initPostFormCache()
 	return getValue(ctx.postFormCache, key)
 }
+
+// GetPostFormFile get postform file
 func (ctx *Context) GetPostFormFile(key string) *multipart.FileHeader {
 	list := ctx.GetPostFormFileArray(key)
 	if len(list) > 0 {
@@ -183,6 +193,8 @@ func (ctx *Context) GetPostFormFile(key string) *multipart.FileHeader {
 	}
 	return nil
 }
+
+// GetPostFormFileArray get postform files
 func (ctx *Context) GetPostFormFileArray(key string) (list []*multipart.FileHeader) {
 	ctx.initPostFormCache()
 	if ctx.Request.MultipartForm != nil {
@@ -190,6 +202,8 @@ func (ctx *Context) GetPostFormFileArray(key string) (list []*multipart.FileHead
 	}
 	return
 }
+
+// SavePostFormFile save file
 func (ctx *Context) SavePostFormFile(file *multipart.FileHeader, dst string) error {
 	src, err := file.Open()
 	if err != nil {
@@ -230,7 +244,7 @@ func (ctx *Context) String(code int, content string) {
 	ctx.Response.Write([]byte(content))
 }
 
-// response with json
+// JSON response with json
 func (ctx *Context) JSON(code int, val M) {
 	b, e := json.Marshal(val)
 	if e != nil {
@@ -242,12 +256,14 @@ func (ctx *Context) JSON(code int, val M) {
 	ctx.Response.Write(b)
 }
 
-// response with html
+// HTML response with html
 func (ctx *Context) HTML(code int, html string) {
 	ctx.Response.Header().Add("Content-Type", htmlContentType)
 	ctx.Response.WriteHeader(code)
 	ctx.Response.Write([]byte(html))
 }
+
+// GetRequestHeader get request header, short for ctx.Request.Header.Get
 func (ctx *Context) GetRequestHeader(key string) string {
 	if nil != ctx.Request {
 		return ctx.Request.Header.Get(key)
@@ -276,6 +292,8 @@ func (ctx *Context) ClientIP() string {
 
 	return "no-ip"
 }
+
+// Redirect short for http.Redirect
 func (ctx *Context) Redirect(code int, location string) {
 	http.Redirect(ctx.Response, ctx.Request, location, code)
 }
