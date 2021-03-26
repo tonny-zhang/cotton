@@ -125,15 +125,15 @@ func (t *tree) add(path string, handler HandlerFunc) *node {
 	return nodeCurrent
 }
 
-func (node node) print(deep int) {
-	key := node.key
-	if node.nodeType == nodeParam {
-		key = ":" + node.paramName
-	} else if node.nodeType == nodeCatchAll {
-		key = "*" + node.paramName
+func (n *node) print(deep int) {
+	key := n.key
+	if n.nodeType == nodeParam {
+		key = ":" + n.paramName
+	} else if n.nodeType == nodeCatchAll {
+		key = "*" + n.paramName
 	}
-	fmt.Printf("%s %d %s %v\n", strings.Repeat("    ", deep), deep, key, node.isRealNode)
-	for _, n := range node.children {
+	fmt.Printf("%s %d %s %v\n", strings.Repeat("    ", deep), deep, key, n.isRealNode)
+	for _, n := range n.children {
 		n.print(deep + 1)
 	}
 }
@@ -169,11 +169,9 @@ func (n *node) insertNode(key string, fullpath string) {
 			panic(fmt.Errorf("[%s] in path [%s] conflicts with [%s]", key, fullpath, fullpathV))
 		}
 	}
-	child, ok := n.children[keyCheck]
-	if !ok {
-		child = newNode(key)
 
-		n.children[keyCheck] = child
+	if _, ok := n.children[keyCheck]; !ok {
+		n.children[keyCheck] = newNode(key)
 	}
 }
 func (n *node) find(path string) (result resultFind) {

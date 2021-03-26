@@ -2,6 +2,7 @@ package cotton
 
 import "fmt"
 
+// Render render html template
 func (ctx *Context) Render(tplName string, params map[string]interface{}) {
 	t := ctx.router.globalTemplate.Lookup(tplName)
 	if t == nil {

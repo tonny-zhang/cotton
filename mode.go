@@ -5,6 +5,7 @@ const (
 	ModeDebug = iota
 	// ModeTest test mode
 	ModeTest
+	// ModeProduct product mode
 	ModeProduct
 )
 

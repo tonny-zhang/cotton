@@ -11,13 +11,13 @@ import (
 )
 
 func getContext() *Context {
-	url_req := "/get?a=1&b[]=11&b[]=12&c[a]=ca&c[b]=cb&list=1&list=2"
+	urlReq := "/get?a=1&b[]=11&b[]=12&c[a]=ca&c[b]=cb&list=1&list=2"
 	return &Context{
-		Request: httptest.NewRequest(http.MethodGet, url_req, nil),
+		Request: httptest.NewRequest(http.MethodGet, urlReq, nil),
 	}
 }
 func postContext() *Context {
-	url_req := "/post"
+	urlReq := "/post"
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	writer.WriteField("name", "abc")
@@ -25,7 +25,7 @@ func postContext() *Context {
 	writer.WriteField("ids", "2")
 
 	writer.Close()
-	req := httptest.NewRequest(http.MethodPost, url_req, body)
+	req := httptest.NewRequest(http.MethodPost, urlReq, body)
 	req.Header.Set("Content-Type", "multipart/form-data; boundary=--------------------------611593185451210078804896")
 
 	return &Context{

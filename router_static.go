@@ -33,6 +33,8 @@ func (fs *onlyFilesFS) Open(name string) (http.File, error) {
 	return &noReaddirFile{f}, nil
 }
 
+// StaticFile static file handler
+//
 // panic when prefix has ':' or '*'; and when open root error
 //
 // you can use `ctx.Param("filepath")` to get relativepath
