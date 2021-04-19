@@ -43,6 +43,8 @@ type Context struct {
 	queryCache    url.Values
 	postFormCache url.Values
 
+	values map[string]interface{}
+
 	router *Router
 }
 
@@ -62,6 +64,7 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 	ctx.handlers = ctx.handlers[0:0]
 	ctx.paramCache = nil
 	ctx.queryCache = nil
+	ctx.values = nil
 
 	ctxPool.Put(ctx)
 	return ctx
@@ -116,6 +119,30 @@ func (ctx *Context) NotFound() {
 	// http.NotFound(ctx.Response, ctx.Request)
 	ctx.Response.Write([]byte("404 page not found"))
 	ctx.Next()
+}
+
+// Set set value
+func (ctx *Context) Set(key string, val interface{}) {
+	if ctx.values == nil {
+		ctx.values = make(map[string]interface{})
+	}
+	ctx.values[key] = val
+}
+
+// Get get value
+func (ctx *Context) Get(key string) (interface{}, bool) {
+	v, ok := ctx.values[key]
+	return v, ok
+}
+
+// Cookie get cookie
+func (ctx *Context) Cookie(key string) (string, error) {
+	c, e := ctx.Request.Cookie(key)
+
+	if e == nil {
+		return c.Value, nil
+	}
+	return "", e
 }
 
 // GetQuery for Request.URL.Query().Get
