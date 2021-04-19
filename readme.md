@@ -54,6 +54,7 @@ func main() {
 * Fast - see [Benchmarks](#benchmarks)
 * parameters path
 * middleware
+  * [session](https://github.com/tonny-zhang/cotton-session)
 * router group
 * custom not found
 * custom group not found
