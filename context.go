@@ -58,13 +58,17 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
 	}
-	ctx.router = router
-	ctx.indexAbort = -1
-	ctx.index = -1
 	ctx.handlers = ctx.handlers[0:0]
+	ctx.index = -1
+	ctx.indexAbort = -1
+
 	ctx.paramCache = nil
 	ctx.queryCache = nil
+	ctx.postFormCache = nil
+
 	ctx.values = nil
+
+	ctx.router = router
 
 	ctxPool.Put(ctx)
 	return ctx
@@ -81,13 +85,34 @@ func (ctx *Context) initQueryCache() {
 func (ctx *Context) initPostFormCache() {
 	if nil == ctx.postFormCache {
 		if nil != ctx.Request {
-			if e := ctx.Request.ParseMultipartForm(defaultMultipartMemory); e != nil {
-				if e != http.ErrNotMultipart {
-					panic(e)
+			ct := ctx.GetRequestHeader("Content-Type")
+			if ct == "application/json" {
+				body := ctx.Request.Body
+				if body != nil {
+					values := url.Values{}
+					obj := make(map[string]interface{})
+					json.NewDecoder(body).Decode(&obj)
+					for k, v := range obj {
+						var valStr string
+						switch v.(type) {
+						case string:
+							valStr = v.(string)
+						default:
+							b, _ := json.Marshal(v)
+							valStr = string(b)
+						}
+						values[k] = []string{valStr}
+					}
+					ctx.postFormCache = values
 				}
+			} else {
+				if e := ctx.Request.ParseMultipartForm(defaultMultipartMemory); e != nil {
+					if e != http.ErrNotMultipart {
+						panic(e)
+					}
+				}
+				ctx.postFormCache = ctx.Request.PostForm
 			}
-
-			ctx.postFormCache = ctx.Request.PostForm
 		} else {
 			ctx.postFormCache = url.Values{}
 		}
