@@ -34,6 +34,15 @@ func NewRouter() *Router {
 	}
 }
 
+// Default get default router
+func Default() *Router {
+	router := NewRouter()
+
+	router.Use(Recover())
+	router.Use(Logger())
+	return router
+}
+
 // Group get group router
 func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	if router.prefix != "" {

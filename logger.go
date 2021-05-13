@@ -51,6 +51,7 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 	if nil == writer {
 		writer = defaultWriter
 	}
+	debugPrint("use logger middleware")
 	return func(ctx *Context) {
 		timeStart := time.Now()
 		ctx.Next()

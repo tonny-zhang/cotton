@@ -41,6 +41,7 @@ func RecoverWithWriter(writer io.Writer, handler ...HandlerFuncRecover) HandlerF
 	if len(handler) == 0 {
 		handler = append(handler, defaultHandlerRecover)
 	}
+	debugPrint("use recover middleware")
 	return func(ctx *Context) {
 		defer func() {
 			if err := recover(); err != nil {
