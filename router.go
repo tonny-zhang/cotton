@@ -194,11 +194,12 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(notfoundHandlers) > 0 {
 		ctx.handlers = append(router.middlewares, notfoundHandlers...)
-		ctx.Next()
 	} else {
-		ctx.handlers = router.middlewares
-		ctx.NotFound()
+		ctx.handlers = append(router.middlewares, func(ctx *Context) {
+			ctx.NotFound()
+		})
 	}
+	ctx.Next()
 }
 
 // Run run for http
