@@ -64,7 +64,7 @@ func main() {
 * [post form](#postform)
 
 ## API Example
-You can find a number of ready-to-run examples at [examples folder](./example)
+You can find a number of ready-to-run examples at [examples project](https://github.com/tonny-zhang/cotton-example)
 
 ### Using GET, POST, PUT, OPTIONS, DELETE, PATCH, HEAD
 
@@ -214,7 +214,7 @@ func main() {
 ```
 ### Use template
 > use `router.LoadTemplates` and `ctx.Render`; 
-> go to [example/template](./example/template/) for detail
+> go to [example/template](https://github.com/tonny-zhang/cotton-example/template/) for detail
 
 ### PostForm
 > use method
@@ -225,7 +225,7 @@ func main() {
 > * `ctx.GetPostFormArray`
 > * `ctx.SavePostFormFile`
 > 
-> go to [example/post/](./example/post/) for detail
+> go to [example/post/](https://github.com/tonny-zhang/cotton-example/post/) for detail
 #### Content-Type is `application/json` default support map[string]string
 `{"code": "test", "wxid": {"name":"test"}, "iv": 123, "encryptedData": [1,2,3], "arr": ["a", "b", "c"]}` conver to `map[string]string{}`
 ## Benchmarks
