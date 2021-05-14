@@ -185,17 +185,19 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	notfoundHandlers := router.notfoundHandlers
+	routerUse := router
 	for _, g := range router.groups {
 		if matchGroup(g, reqURI) {
-			notfoundHandlers = g.notfoundHandlers
+			routerUse = g
 			break
 		}
 	}
+	notfoundHandlers := routerUse.notfoundHandlers
+	middlewares := routerUse.middlewares
 	if len(notfoundHandlers) > 0 {
-		ctx.handlers = append(router.middlewares, notfoundHandlers...)
+		ctx.handlers = append(middlewares, notfoundHandlers...)
 	} else {
-		ctx.handlers = append(router.middlewares, func(ctx *Context) {
+		ctx.handlers = append(middlewares, func(ctx *Context) {
 			ctx.NotFound()
 		})
 	}
