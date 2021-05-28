@@ -7,6 +7,7 @@ import (
 type responseWriter interface {
 	http.ResponseWriter
 	GetStatusCode() int
+	GetHTTPResponseWriter() http.ResponseWriter
 }
 
 type resWriter struct {
@@ -22,4 +23,7 @@ func (w *resWriter) WriteHeader(statusCode int) {
 }
 func (w *resWriter) GetStatusCode() int {
 	return w.statusCode
+}
+func (w *resWriter) GetHTTPResponseWriter() http.ResponseWriter {
+	return w.ResponseWriter
 }
