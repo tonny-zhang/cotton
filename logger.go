@@ -9,12 +9,13 @@ import (
 
 // LoggerConf config for logger
 type LoggerConf struct {
-	Formatter func(LoggerFormatterParam, *Context) string
+	Formatter func(param LoggerFormatterParam, ctx *Context) string
 	Writer    io.Writer
 }
 
 // LoggerFormatterParam param to formatter
 type LoggerFormatterParam struct {
+	Host       string
 	Method     string
 	StatusCode int
 	TimeStamp  time.Time
@@ -30,7 +31,7 @@ var defaultLogFormatter = func(param LoggerFormatterParam, ctx *Context) string 
 		param.Method,
 		param.StatusCode,
 		param.Latency,
-		param.Path,
+		param.Host+param.Path,
 	)
 }
 
@@ -62,6 +63,7 @@ func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 			TimeStamp:  time.Now(),
 			StatusCode: ctx.Response.GetStatusCode(),
 			ClientIP:   ctx.ClientIP(),
+			Host:       ctx.Request.Host,
 		}
 
 		param.Latency = param.TimeStamp.Sub(timeStart)

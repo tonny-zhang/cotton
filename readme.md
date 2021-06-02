@@ -62,7 +62,7 @@ func main() {
 * custom static file
 * [template support](#use-template)
 * [post form](#postform)
-
+* [domain](https://github.com/tonny-zhang/cotton-example/blob/master/domain/main.go)
 ## API Example
 You can find a number of ready-to-run examples at [examples project](https://github.com/tonny-zhang/cotton-example)
 

@@ -15,6 +15,7 @@ type HandlerFunc func(ctx *Context)
 // Router router struct
 type Router struct {
 	prefix      string
+	domain      string
 	hasHandled  bool
 	trees       map[string]*tree
 	middlewares []HandlerFunc
@@ -23,6 +24,8 @@ type Router struct {
 
 	groups []*Router
 
+	domains map[string]*Router
+
 	globalTemplate *template.Template
 }
 
@@ -30,6 +33,7 @@ type Router struct {
 func NewRouter() *Router {
 	return &Router{
 		trees:       make(map[string]*tree),
+		domains:     make(map[string]*Router),
 		middlewares: make([]HandlerFunc, 0),
 	}
 }
@@ -62,6 +66,7 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	}
 	r := &Router{
 		prefix:           prefix,
+		domain:           router.domain,
 		trees:            router.trees,
 		middlewares:      router.middlewares,
 		notfoundHandlers: router.notfoundHandlers,
@@ -118,7 +123,8 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	// nodeAdded.handler = handler
 	nodeAdded.middleware = append(nodeAdded.middleware, handler)
 	router.hasHandled = true
-	debugPrintRoute(method, path, handler)
+	// debugPrint("list domain [%s]", router.domain)
+	debugPrintRoute(method, router.domain+path, handler)
 }
 
 // Get router get method
@@ -170,6 +176,12 @@ func (router *Router) Head(path string, handler HandlerFunc) {
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := newContext(w, r, router)
 
+	host := strings.Split(r.Host, ":")[0]
+
+	if r, ok := router.domains[host]; ok {
+		router = r
+	}
+
 	r.Method = strings.ToUpper(r.Method)
 	reqURI := r.URL.Path
 
@@ -192,8 +204,10 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+
 	notfoundHandlers := routerUse.notfoundHandlers
 	middlewares := routerUse.middlewares
+
 	if len(notfoundHandlers) > 0 {
 		ctx.handlers = append(middlewares, notfoundHandlers...)
 	} else {
@@ -209,15 +223,17 @@ func (router *Router) Run(addr string) {
 	if addr == "" {
 		addr = ":5000"
 	}
-	var groupsNew []*Router
-	for _, g := range router.groups {
-		if g.hasHandled {
-			groupsNew = append(groupsNew, g)
-		} else {
-			debugPrint("group [%s] has no handler, will be discarded", g.prefix)
+	for _, r := range router.domains {
+		var groupsNew []*Router
+		for _, g := range r.groups {
+			if g.hasHandled {
+				groupsNew = append(groupsNew, g)
+			} else {
+				debugPrint("group [%s] has no handler, will be discarded", g.prefix)
+			}
 		}
+		r.groups = groupsNew
 	}
-	router.groups = groupsNew
 	debugPrint("Listening and serving HTTP on %s\n", addr)
 	http.ListenAndServe(addr, router)
 }
