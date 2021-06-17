@@ -166,3 +166,16 @@ func TestMatchGroup(t *testing.T) {
 		prefix: "/v1/:method/",
 	}, "/v2/test/"))
 }
+
+func TestMultipleEOP(t *testing.T) {
+	router := NewRouter()
+	content := "router a"
+	router.Get("/a", func(c *Context) {
+		c.String(http.StatusOK, content)
+	})
+
+	w := doRequest(router, http.MethodGet, "////a")
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, content, w.Body.String())
+}

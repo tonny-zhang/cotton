@@ -188,9 +188,15 @@ func (n *node) find(path string) (result resultFind) {
 
 	result.params = paramsPool.Get().(map[string]string)
 
+	var keyPrev = ""
 	for i := start; i < lenstr; i++ {
 		if path[i] == '/' {
 			key := path[start:i]
+			if key == keyPrev {
+				start = i + 1
+				continue
+			}
+			keyPrev = key
 
 			child, ok = n.children[key]
 			if !ok {
