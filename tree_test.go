@@ -75,6 +75,19 @@ func TestAddConflicts(t *testing.T) {
 		tree.add("/s/*file", nil)
 	})
 }
+func TestTreeMultipleEOP(t *testing.T) {
+	assert.PanicsWithError(t, "path [//a] has multiple '/'", func() {
+		tree := newTree()
+		tree.add("//a", nil)
+	})
+}
+
+func TestRouterHasSpace(t *testing.T) {
+	assert.PanicsWithError(t, "path [/ /a] has space", func() {
+		tree := newTree()
+		tree.add("/ /a", nil)
+	})
+}
 
 // func TestTree1(t *testing.T) {
 // 	tree := newTree()

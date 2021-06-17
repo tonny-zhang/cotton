@@ -68,6 +68,12 @@ func (t *tree) add(path string, handler HandlerFunc) *node {
 		for i := start; i < lenstr; i++ {
 			if path[i] == '/' {
 				key := path[start:i]
+				if key == "" {
+					panic(fmt.Errorf("path [%s] has multiple '/'", path))
+				}
+				if strings.Index(key, " ") > -1 {
+					panic(fmt.Errorf("path [%s] has space", path))
+				}
 
 				nodeCurrent.insertNode(key, path)
 				child, ok := nodeCurrent.children[key]
