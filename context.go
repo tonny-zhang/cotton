@@ -66,8 +66,11 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 
 	ctx.router = router
 
-	ctxPool.Put(ctx)
+	// ctxPool.Put(ctx)
 	return ctx
+}
+func (ctx *Context) destroy() {
+	ctxPool.Put(ctx)
 }
 func (ctx *Context) initQueryCache() {
 	if nil == ctx.queryCache {

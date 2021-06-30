@@ -193,6 +193,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ctx.handlers = result.node.middleware
 
 			ctx.Next()
+			ctx.destroy()
 			return
 		}
 	}
@@ -216,6 +217,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	ctx.Next()
+	ctx.destroy()
 }
 
 // Run run for http
