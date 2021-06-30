@@ -66,7 +66,6 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 
 	ctx.router = router
 
-	// ctxPool.Put(ctx)
 	return ctx
 }
 func (ctx *Context) destroy() {
