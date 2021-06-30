@@ -2,7 +2,9 @@ package cotton
 
 import (
 	"net/http"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -178,4 +180,39 @@ func TestMultipleEOP(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, content, w.Body.String())
+}
+
+func TestMergeRequest(t *testing.T) {
+	var wg sync.WaitGroup
+	router := NewRouter()
+	contentA := "router a"
+	contentB := "router b"
+	router.Get("/a", func(c *Context) {
+		time.Sleep(time.Second * 3)
+		c.String(http.StatusOK, contentA)
+	})
+	router.Get("/b", func(c *Context) {
+		time.Sleep(time.Second * 1)
+		c.String(http.StatusOK, contentB)
+	})
+
+	wg.Add(2)
+	var resultA, resultB string
+	go func() {
+		defer wg.Done()
+
+		w := doRequest(router, http.MethodGet, "/a")
+		resultA = w.Body.String()
+	}()
+	time.Sleep(time.Second)
+
+	go func() {
+		defer wg.Done()
+		w := doRequest(router, http.MethodGet, "/b")
+		resultB = w.Body.String()
+	}()
+	wg.Wait()
+
+	assert.Equal(t, contentA, resultA)
+	assert.Equal(t, contentB, resultB)
 }

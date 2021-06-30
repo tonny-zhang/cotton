@@ -124,3 +124,14 @@ func TestGetMultipartPostForm(t *testing.T) {
 	_, ok = c.GetPostFormMap("nokey")
 	assert.False(t, ok)
 }
+
+func TestSyncPool(t *testing.T) {
+	c1 := newContext(nil, nil, nil)
+	c2 := newContext(nil, nil, nil)
+
+	c1.index = 1
+	c2.index = 2
+
+	assert.NotEqual(t, c1.index, c2.index)
+	// assert.False(t, true)
+}
