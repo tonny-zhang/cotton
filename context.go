@@ -175,6 +175,12 @@ func (ctx *Context) GetQueryMap(key string) (dicts map[string]string, exists boo
 	return getValue(ctx.queryCache, key)
 }
 
+// GetAllQuery get all query value
+func (ctx Context) GetAllQuery() url.Values {
+	ctx.initQueryCache()
+	return ctx.queryCache
+}
+
 // Param returns the value of the URL param.
 //     router.GET("/user/:id", func(c *gin.Context) {
 //         // a GET request to /user/john
