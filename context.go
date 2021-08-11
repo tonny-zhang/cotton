@@ -66,7 +66,6 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 
 	ctx.router = router
 
-	// ctxPool.Put(ctx)
 	return ctx
 }
 func (ctx *Context) destroy() {
@@ -174,6 +173,12 @@ func getValue(m map[string][]string, key string) (dicts map[string]string, exist
 func (ctx *Context) GetQueryMap(key string) (dicts map[string]string, exists bool) {
 	ctx.initQueryCache()
 	return getValue(ctx.queryCache, key)
+}
+
+// GetAllQuery get all query value
+func (ctx Context) GetAllQuery() url.Values {
+	ctx.initQueryCache()
+	return ctx.queryCache
 }
 
 // Param returns the value of the URL param.
