@@ -18,7 +18,6 @@ Cotton is a RESTful web framework written by Go (Golang). It's fast and scalable
 		- [Custom static file](#custom-static-file)
 		- [Use template](#use-template)
 		- [PostForm](#postform)
-			- [Content-Type is `application/json` default support map[string]string](#content-type-is-applicationjson-default-support-mapstringstring)
 	- [Benchmarks](#benchmarks)
 	- [Author](#author)
 	- [Acknowledgements](#acknowledgements)
@@ -226,8 +225,7 @@ func main() {
 > * `ctx.SavePostFormFile`
 > 
 > go to [example/post/](https://github.com/tonny-zhang/cotton-example/tree/master/post/main.go) for detail
-#### Content-Type is `application/json` default support map[string]string
-`{"code": "test", "wxid": {"name":"test"}, "iv": 123, "encryptedData": [1,2,3], "arr": ["a", "b", "c"]}` conver to `map[string]string{}`
+
 ## Benchmarks
 the benchmarks code for cotton be found in the [cotton-bench](https://github.com/tonny-zhang/cotton-bench) repository, so performance of cotton is good!
 ```
