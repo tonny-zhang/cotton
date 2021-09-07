@@ -9,6 +9,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var handlerEmpty = func(c *Context) {}
+
+func TestDiffentParamNameInSamePos(t *testing.T) {
+	// same postion param name must be same
+	assert.PanicsWithError(t, "[:name] in path [/v1/abc/abc/:name/:id] conflicts with [/v1/abc/abc/:id]", func() {
+		router := NewRouter()
+		g := router.Group("/v1/abc/")
+		g.Post("/abc/:id", handlerEmpty)
+		g.Post("/abc/:name/:id", handlerEmpty)
+	})
+}
 func TestAddHandleFunc(t *testing.T) {
 	handler := func(c *Context) {}
 	assert.PanicsWithError(t, "[hello] shold absolute path", func() {

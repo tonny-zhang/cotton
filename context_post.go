@@ -1,7 +1,6 @@
 package cotton
 
 import (
-	"encoding/json"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,34 +12,12 @@ import (
 func (ctx *Context) initPostFormCache() {
 	if nil == ctx.postFormCache {
 		if nil != ctx.Request {
-			ct := ctx.GetRequestHeader("Content-Type")
-			if ct == "application/json" {
-				body := ctx.Request.Body
-				if body != nil {
-					values := url.Values{}
-					obj := make(map[string]interface{})
-					json.NewDecoder(body).Decode(&obj)
-					for k, v := range obj {
-						var valStr string
-						switch v.(type) {
-						case string:
-							valStr = v.(string)
-						default:
-							b, _ := json.Marshal(v)
-							valStr = string(b)
-						}
-						values[k] = []string{valStr}
-					}
-					ctx.postFormCache = values
+			if e := ctx.Request.ParseMultipartForm(defaultMultipartMemory); e != nil {
+				if e != http.ErrNotMultipart {
+					panic(e)
 				}
-			} else {
-				if e := ctx.Request.ParseMultipartForm(defaultMultipartMemory); e != nil {
-					if e != http.ErrNotMultipart {
-						panic(e)
-					}
-				}
-				ctx.postFormCache = ctx.Request.PostForm
 			}
+			ctx.postFormCache = ctx.Request.PostForm
 		} else {
 			ctx.postFormCache = url.Values{}
 		}
