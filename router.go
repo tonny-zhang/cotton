@@ -221,7 +221,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Run run for http
-func (router *Router) Run(addr string) {
+func (router *Router) Run(addr string) error {
 	if addr == "" {
 		addr = ":5000"
 	}
@@ -237,7 +237,7 @@ func (router *Router) Run(addr string) {
 		r.groups = groupsNew
 	}
 	debugPrint("Listening and serving HTTP on %s\n", addr)
-	http.ListenAndServe(addr, router)
+	return http.ListenAndServe(addr, router)
 }
 
 // Use use for middleware
