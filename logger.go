@@ -42,6 +42,11 @@ func Logger() HandlerFunc {
 	return LoggerWidthConf(LoggerConf{})
 }
 
+// SetWriter set default writer
+func SetWriter(writer io.Writer) {
+	defaultWriter = writer
+}
+
 // LoggerWidthConf get logger with config
 func LoggerWidthConf(conf LoggerConf) HandlerFunc {
 	formatter := conf.Formatter

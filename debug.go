@@ -13,7 +13,7 @@ func IsDebugging() bool {
 }
 
 func debugPrint(format string, values ...interface{}) {
-	if IsDebugging() {
+	if IsDebugging() && defaultWriter != nil {
 		if !strings.HasSuffix(format, "\n") {
 			format += "\n"
 		}
