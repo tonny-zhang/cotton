@@ -261,8 +261,9 @@ func (router *Router) Stop(ctx context.Context) (e error) {
 		}
 
 		e = router.srv.Shutdown(ctx)
+
+		debugPrint("exit http")
 	}
-	fmt.Println("退出", e)
 	return
 }
 
