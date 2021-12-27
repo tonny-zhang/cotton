@@ -1,10 +1,12 @@
 package cotton
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/tonny-zhang/cotton/utils"
 )
@@ -14,6 +16,7 @@ type HandlerFunc func(ctx *Context)
 
 // Router router struct
 type Router struct {
+	srv         *http.Server
 	prefix      string
 	domain      string
 	hasHandled  bool
@@ -237,7 +240,30 @@ func (router *Router) Run(addr string) error {
 		r.groups = groupsNew
 	}
 	debugPrint("Listening and serving HTTP on %s\n", addr)
-	return http.ListenAndServe(addr, router)
+
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
+	router.srv = srv
+	e := srv.ListenAndServe()
+
+	return e
+}
+
+// Stop stop http service
+func (router *Router) Stop(ctx context.Context) (e error) {
+	if router.srv != nil {
+		if ctx == nil {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+		}
+
+		e = router.srv.Shutdown(ctx)
+	}
+	fmt.Println("退出", e)
+	return
 }
 
 // Use use for middleware
