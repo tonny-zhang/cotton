@@ -139,5 +139,4 @@ func TestTree2(t *testing.T) {
 	result := tree.root.find("/v1///a/")
 	assert.NotNil(t, result.node)
 
-	t.Fatal(true)
 }
