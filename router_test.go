@@ -114,6 +114,17 @@ func TestGroup(t *testing.T) {
 	assert.Equal(t, "g1 b", w.Body.String())
 	// assert.True(t, false)
 }
+func TestGroupPrefix(t *testing.T) {
+	router := NewRouter()
+	g1 := router.Group("/v1")
+	g1.Get("/a", func(c *Context) {
+		c.String(http.StatusOK, "g1 a")
+	})
+
+	w := doRequest(router, http.MethodGet, "/v1/v1/a")
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
 func TestGroupPanic(t *testing.T) {
 	assert.PanicsWithError(t, "group [] must start with /", func() {
 		router := NewRouter()

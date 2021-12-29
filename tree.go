@@ -3,7 +3,6 @@ package cotton
 import (
 	"fmt"
 	"strings"
-	"sync"
 )
 
 const (
@@ -14,9 +13,6 @@ const (
 
 	keyParam = ":_"
 )
-
-var paramsPool sync.Pool
-var maxNumParams = 0
 
 type (
 	tree struct {
@@ -40,11 +36,11 @@ type (
 	}
 )
 
-func init() {
-	paramsPool.New = func() interface{} {
-		return make(map[string]string)
-	}
-}
+// func init() {
+// 	paramsPool.New = func() interface{} {
+// 		return make(map[string]string)
+// 	}
+// }
 func (t *tree) add(path string, handler HandlerFunc) *node {
 	if len(path) == 0 || path[0] != '/' {
 		panic(fmt.Errorf("path [%s] must start with /", path))
@@ -120,14 +116,6 @@ func (t *tree) add(path string, handler HandlerFunc) *node {
 	nodeCurrent.isRealNode = true
 	nodeCurrent.handler = handler
 	nodeCurrent.fullpath = path
-
-	if maxNumParams < numParams {
-		maxNumParams = numParams
-
-		paramsPool.New = func() interface{} {
-			return make(map[string]string, maxNumParams)
-		}
-	}
 	return nodeCurrent
 }
 
@@ -180,6 +168,7 @@ func (n *node) insertNode(key string, fullpath string) {
 		n.children[keyCheck] = newNode(key)
 	}
 }
+
 func (n *node) find(path string) (result resultFind) {
 	if path == "/" && n.key == path {
 		if n.isRealNode {
@@ -187,22 +176,32 @@ func (n *node) find(path string) (result resultFind) {
 		}
 		return
 	}
-
+	pathNew := []byte{}
+	has := false
+	for i, j := 0, len(path); i < j; i++ {
+		if path[i] == '/' {
+			if !has {
+				has = true
+				pathNew = append(pathNew, path[i])
+			}
+		} else {
+			has = false
+			pathNew = append(pathNew, path[i])
+		}
+	}
+	path = string(pathNew)
 	var child *node
 	var ok bool
 	var start, lenstr = 1, len(path)
 
-	result.params = paramsPool.Get().(map[string]string)
-
-	var keyPrev = ""
+	result.params = make(map[string]string)
 	for i := start; i < lenstr; i++ {
 		if path[i] == '/' {
 			key := path[start:i]
-			if key == keyPrev {
+			if key == "" {
 				start = i + 1
 				continue
 			}
-			keyPrev = key
 
 			child, ok = n.children[key]
 			if !ok {
@@ -210,7 +209,6 @@ func (n *node) find(path string) (result resultFind) {
 				if ok {
 					if child.nodeType == nodeCatchAll {
 						result.params[child.paramName] = path[start:]
-						paramsPool.Put(result.params)
 						result.node = child
 						return
 					}
@@ -218,7 +216,6 @@ func (n *node) find(path string) (result resultFind) {
 				}
 			}
 			if !ok {
-				paramsPool.Put(result.params)
 				return
 			}
 			n = child
@@ -239,7 +236,6 @@ func (n *node) find(path string) (result resultFind) {
 	if ok && child.isRealNode {
 		result.node = child
 	}
-	paramsPool.Put(result.params)
 	return
 }
 

@@ -189,8 +189,8 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reqURI := r.URL.Path
 
 	if tree, ok := router.trees[r.Method]; ok {
-		result := tree.root.find(reqURI)
 
+		result := tree.root.find(reqURI)
 		if result.node != nil {
 			ctx.paramCache = result.params
 			ctx.handlers = result.node.middleware

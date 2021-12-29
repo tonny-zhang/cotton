@@ -88,50 +88,6 @@ func TestRouterHasSpace(t *testing.T) {
 		tree.add("/ /a", nil)
 	})
 }
-
-// func TestTree1(t *testing.T) {
-// 	tree := newTree()
-// 	arrRouter := []string{
-// 		"/",
-// 		"/a",
-// 		"/a/",
-// 		"/a/:method",
-// 		"/a/:method/:name",
-// 		"/a/:method/:name/:id",
-// 		"/a/:method/:name/:id/test",
-// 		"/c/*file",
-// 		"/b/",
-// 		"/b/*file",
-// 	}
-
-// 	var tmpValue string
-// 	for _, path := range arrRouter {
-// 		tree.add(path, func(p string) HandlerFunc {
-// 			return func(c *Context) {
-// 				tmpValue = "for " + p
-// 				// fmt.Println(tmpValue)
-// 			}
-// 		}(path))
-// 	}
-// 	tmpValue += ""
-
-// 	printTree(tree)
-
-// 	var pathTest string
-
-// 	pathTest = "/a/test/abc/123/test"
-// 	pathTest = "/c/test/abc/123/test"
-// 	pathTest = "/b/"
-// 	result := tree.root.find(pathTest)
-// 	if result.node != nil {
-// 		result.node.handler(nil)
-// 		fmt.Println(result, result.node.key, result.params, tmpValue)
-// 	} else {
-// 		fmt.Println("no")
-// 	}
-
-// 	assert.True(t, false)
-// }
 func TestTree(t *testing.T) {
 	tree := newTree()
 	arrRouter := []string{
@@ -150,13 +106,10 @@ func TestTree(t *testing.T) {
 		tree.add(path, func(p string) HandlerFunc {
 			return func(c *Context) {
 				tmpValue = "for " + p
-				// fmt.Println(tmpValue)
 			}
 		}(path))
 	}
 	tmpValue += ""
-
-	// printTree(tree)
 
 	for _, path := range arrRouter {
 		tmpValue = ""
@@ -172,4 +125,19 @@ func TestTree(t *testing.T) {
 			assert.Equal(t, c, len(result.params), path)
 		}
 	}
+}
+func TestTreeNotFound(t *testing.T) {
+	tree := newTree()
+	tree.add("/v1/a", nil)
+	result := tree.root.find("/v1/v1/a")
+
+	assert.Nil(t, result.node)
+}
+func TestTree2(t *testing.T) {
+	tree := newTree()
+	tree.add("/v1/a/", nil)
+	result := tree.root.find("/v1///a/")
+	assert.NotNil(t, result.node)
+
+	t.Fatal(true)
 }

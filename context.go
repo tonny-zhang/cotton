@@ -48,12 +48,21 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 	// use sync.Pool
 	ctx := ctxPool.Get().(*Context)
 
-	// reset all property
+	ctx.reset()
+
 	ctx.Request = r
 	ctx.Response = &resWriter{
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
 	}
+
+	ctx.router = router
+
+	return ctx
+}
+func (ctx *Context) reset() {
+	ctx.Request = nil
+	ctx.Response = nil
 	ctx.handlers = ctx.handlers[0:0]
 	ctx.index = -1
 	ctx.indexAbort = -1
@@ -64,11 +73,10 @@ func newContext(w http.ResponseWriter, r *http.Request, router *Router) *Context
 
 	ctx.values = nil
 
-	ctx.router = router
-
-	return ctx
+	ctx.router = nil
 }
 func (ctx *Context) destroy() {
+	ctx.reset()
 	ctxPool.Put(ctx)
 }
 func (ctx *Context) initQueryCache() {
