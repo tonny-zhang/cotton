@@ -52,20 +52,19 @@ func Default() *Router {
 
 // Group get group router
 func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
-	if router.prefix != "" {
-		panic(fmt.Errorf("group [%s] can not group again", router.prefix))
-	}
 	if len(path) == 0 || path[0] != '/' {
 		panic(fmt.Errorf("group [%s] must start with /", path))
 	}
-	if strings.Index(path, "*") > -1 {
+	if strings.Index(path, "*") > -1 || strings.Index(path, ":") > -1 {
 		panic(fmt.Errorf("group path [%s] can not has parameter", path))
 	}
 	prefix := utils.CleanPath(path + "/")
-	for _, g := range router.groups {
-		if matchGroup(g, prefix) {
-			panic(fmt.Errorf("group [%s] conflicts with [%s]", prefix, g.prefix))
-		}
+	matchedGroup := router.matchGroup(prefix)
+	if matchedGroup != nil {
+		panic(fmt.Errorf("group [%s] conflicts with [%s]", prefix, matchedGroup.prefix))
+	}
+	if router.prefix != "" {
+		prefix = utils.CleanPath(router.prefix + "/" + prefix)
 	}
 	r := &Router{
 		prefix:           prefix,
@@ -77,6 +76,20 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	r.middlewares = append(r.middlewares, handler...)
 	router.groups = append(router.groups, r)
 	return r
+}
+func (router *Router) matchGroup(path string) *Router {
+	for _, g := range router.groups {
+		if len(g.groups) > 0 {
+			gg := g.matchGroup(path)
+			if gg != nil {
+				return gg
+			}
+		}
+		if matchGroup(g, path) {
+			return g
+		}
+	}
+	return nil
 }
 func matchGroup(router *Router, path string) bool {
 	if len(router.prefix) > 0 {
@@ -90,18 +103,15 @@ func matchGroup(router *Router, path string) bool {
 		}
 
 		for i, j := 0, len(arrRP); i < j; i++ {
-			if strings.Index(arrRP[i], ":") > -1 || strings.Index(arrPath[i], ":") > -1 {
-				continue
-			}
 			if i == j-1 && arrRP[i] == "" {
-				break
+				return true
 			}
 			if arrRP[i] != arrPath[i] {
 				return false
 			}
 		}
 	}
-	return true
+	return false
 }
 
 // NotFound custom NotFoundHandler
@@ -201,12 +211,9 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	routerUse := router
-	for _, g := range router.groups {
-		if matchGroup(g, reqURI) {
-			routerUse = g
-			break
-		}
+	routerUse := router.matchGroup(reqURI)
+	if routerUse == nil {
+		routerUse = router
 	}
 
 	notfoundHandlers := routerUse.notfoundHandlers
