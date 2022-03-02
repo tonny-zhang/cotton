@@ -49,10 +49,16 @@ func TestGroupPanic(t *testing.T) {
 		router.Group("abc")
 	})
 
-	assert.PanicsWithError(t, "group [/a/] conflicts with [/a/]", func() {
+	assert.PanicsWithError(t, "group [/a/] is setted", func() {
 		router := NewRouter()
 		router.Group("/a")
 		router.Group("/a")
+	})
+
+	assert.PanicsWithError(t, "group [/a/b/] is setted", func() {
+		router := NewRouter()
+		router.Group("/a").Group("/b")
+		router.Group("/a//b")
 	})
 
 	assert.PanicsWithError(t, "group path [/:method] can not has parameter", func() {
@@ -144,4 +150,51 @@ func TestGroupMulty(t *testing.T) {
 
 	w = doRequest(router, http.MethodGet, "/a/b/test")
 	assert.Equal(t, "/a/b/test", w.Body.String())
+}
+
+func TestCustomGroupNotFoundOrder(t *testing.T) {
+
+	infoCustomNotFound := "not found from custom"
+	infoCustomGroupNotFound := "not found from custom group"
+	infoCustomGroupUserNotFound := "not found from custom group user"
+
+	{
+		router := NewRouter()
+		router.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomNotFound)
+		})
+		g := router.Group("/v1")
+		g.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomGroupNotFound)
+		})
+		gUser := router.Group("/v1/user")
+		gUser.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomGroupUserNotFound)
+		})
+
+		router.sort()
+		w := doRequest(router, http.MethodGet, "/v1/user/path404")
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, infoCustomGroupUserNotFound, w.Body.String())
+	}
+
+	{
+		router := NewRouter()
+		router.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomNotFound)
+		})
+		gUser := router.Group("/v1/user")
+		gUser.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomGroupUserNotFound)
+		})
+		g := router.Group("/v1")
+		g.NotFound(func(ctx *Context) {
+			ctx.String(http.StatusNotFound, infoCustomGroupNotFound)
+		})
+
+		router.sort()
+		w := doRequest(router, http.MethodGet, "/v1/user/path404")
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, infoCustomGroupUserNotFound, w.Body.String())
+	}
 }

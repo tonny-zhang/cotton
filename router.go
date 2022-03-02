@@ -25,7 +25,7 @@ type Router struct {
 
 	notfoundHandlers []HandlerFunc
 
-	groups []*Router
+	groups groupArr
 
 	domains map[string]*Router
 
@@ -50,70 +50,6 @@ func Default() *Router {
 	return router
 }
 
-// Group get group router
-func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
-	if len(path) == 0 || path[0] != '/' {
-		panic(fmt.Errorf("group [%s] must start with /", path))
-	}
-	if strings.Index(path, "*") > -1 || strings.Index(path, ":") > -1 {
-		panic(fmt.Errorf("group path [%s] can not has parameter", path))
-	}
-	prefix := utils.CleanPath(path + "/")
-	matchedGroup := router.matchGroup(prefix)
-	if matchedGroup != nil {
-		panic(fmt.Errorf("group [%s] conflicts with [%s]", prefix, matchedGroup.prefix))
-	}
-	if router.prefix != "" {
-		prefix = utils.CleanPath(router.prefix + "/" + prefix)
-	}
-	r := &Router{
-		prefix:           prefix,
-		domain:           router.domain,
-		trees:            router.trees,
-		middlewares:      router.middlewares,
-		notfoundHandlers: router.notfoundHandlers,
-	}
-	r.middlewares = append(r.middlewares, handler...)
-	router.groups = append(router.groups, r)
-	return r
-}
-func (router *Router) matchGroup(path string) *Router {
-	for _, g := range router.groups {
-		if len(g.groups) > 0 {
-			gg := g.matchGroup(path)
-			if gg != nil {
-				return gg
-			}
-		}
-		if matchGroup(g, path) {
-			return g
-		}
-	}
-	return nil
-}
-func matchGroup(router *Router, path string) bool {
-	if len(router.prefix) > 0 {
-		if strings.HasPrefix(path, router.prefix) {
-			return true
-		}
-		arrRP := strings.Split(router.prefix, "/")
-		arrPath := strings.Split(path, "/")
-		if len(arrPath) < len(arrRP) {
-			return false
-		}
-
-		for i, j := 0, len(arrRP); i < j; i++ {
-			if i == j-1 && arrRP[i] == "" {
-				return true
-			}
-			if arrRP[i] != arrPath[i] {
-				return false
-			}
-		}
-	}
-	return false
-}
-
 // NotFound custom NotFoundHandler
 func (router *Router) NotFound(handler ...HandlerFunc) {
 	router.notfoundHandlers = handler
@@ -133,10 +69,8 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	}
 	nodeAdded := router.trees[method].add(path, nil)
 	nodeAdded.middleware = append(nodeAdded.middleware, router.middlewares...)
-	// nodeAdded.handler = handler
 	nodeAdded.middleware = append(nodeAdded.middleware, handler)
 	router.hasHandled = true
-	// debugPrint("list domain [%s]", router.domain)
 	debugPrintRoute(method, router.domain+path, handler)
 }
 
@@ -246,6 +180,7 @@ func (router *Router) Run(addr string) error {
 		}
 		r.groups = groupsNew
 	}
+	router.sort() // 对group进行排序
 	debugPrint("Listening and serving HTTP on %s\n", addr)
 
 	srv := &http.Server{
