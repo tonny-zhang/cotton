@@ -26,3 +26,8 @@ func decodeJSON(r io.Reader, obj interface{}) error {
 	decoder := json.NewDecoder(r)
 	return decoder.Decode(obj)
 }
+
+var (
+	// JSON json binding
+	JSON IBindingBody = jsonBinding{}
+)

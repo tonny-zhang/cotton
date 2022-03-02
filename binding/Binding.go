@@ -12,8 +12,3 @@ type IBindingBody interface {
 	IBinding
 	BindBody([]byte, interface{}) error
 }
-
-var (
-	// JSON json binding
-	JSON = jsonBinding{}
-)
