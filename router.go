@@ -67,6 +67,10 @@ func (router *Router) addHandleFunc(method, path string, handler HandlerFunc) {
 	if _, ok := router.trees[method]; !ok {
 		router.trees[method] = newTree()
 	}
+	result := router.trees[method].root.find(path)
+	if result.node != nil && result.node.isRealNode {
+		panic(fmt.Errorf("[%s %s] has being setted", method, path))
+	}
 	nodeAdded := router.trees[method].add(path, nil)
 	nodeAdded.middleware = append(nodeAdded.middleware, router.middlewares...)
 	nodeAdded.middleware = append(nodeAdded.middleware, handler)

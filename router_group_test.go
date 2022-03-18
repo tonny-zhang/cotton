@@ -198,3 +198,21 @@ func TestCustomGroupNotFoundOrder(t *testing.T) {
 		assert.Equal(t, infoCustomGroupUserNotFound, w.Body.String())
 	}
 }
+
+func TestCustomGroupSameRule(t *testing.T) {
+	router := NewRouter()
+	g := router.Group("/test")
+
+	g.Get("/abc", func(ctx *Context) {
+		ctx.String(http.StatusOK, "abc")
+	})
+	assert.PanicsWithError(t, "[GET /test/abc] has being setted", func() {
+		g.Get("/abc", func(ctx *Context) {
+			ctx.String(http.StatusOK, "123")
+		})
+	})
+
+	router.Get("/test", func(ctx *Context) {
+		ctx.String(http.StatusOK, "get test")
+	})
+}
