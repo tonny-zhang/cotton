@@ -32,14 +32,16 @@ func (router *Router) Group(path string, handler ...HandlerFunc) *Router {
 	if router.prefix != "" {
 		prefix = utils.CleanPath(router.prefix + "/" + prefix)
 	}
+	middlewares := append([]HandlerFunc{}, router.middlewares...)
+	middlewares = append(middlewares, handler...)
 	r := &Router{
 		prefix:           prefix,
 		domain:           router.domain,
 		trees:            router.trees,
-		middlewares:      router.middlewares,
+		middlewares:      middlewares,
 		notfoundHandlers: router.notfoundHandlers,
 	}
-	r.middlewares = append(r.middlewares, handler...)
+
 	router.groups = append(router.groups, r)
 	return r
 }
