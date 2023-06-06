@@ -126,6 +126,27 @@ func TestTree(t *testing.T) {
 		}
 	}
 }
+func TestEmptyParam(t *testing.T) {
+	tree := newTree()
+	tree.add("/test/:conf", nil)
+	tree.add("/test1/:conf/:test", nil)
+
+	result := tree.root.find("/test/abc")
+	assert.Equal(t, map[string]string{
+		"conf": "abc",
+	}, result.params)
+
+	// not match anything
+	result = tree.root.find("/test/")
+	assert.Equal(t, map[string]string{}, result.params)
+	// not match anything
+	result = tree.root.find("/")
+	assert.Equal(t, map[string]string{}, result.params)
+
+	// not match anything
+	result = tree.root.find("/test1/")
+	assert.Equal(t, map[string]string{}, result.params)
+}
 func TestTreeNotFound(t *testing.T) {
 	tree := newTree()
 	tree.add("/v1/a", nil)

@@ -170,6 +170,7 @@ func (n *node) insertNode(key string, fullpath string) {
 }
 
 func (n *node) find(path string) (result resultFind) {
+	result.params = make(map[string]string)
 	if path == "/" && n.key == path {
 		if n.isRealNode {
 			result.node = n
@@ -194,7 +195,6 @@ func (n *node) find(path string) (result resultFind) {
 	var ok bool
 	var start, lenstr = 1, len(path)
 
-	result.params = make(map[string]string)
 	for i := start; i < lenstr; i++ {
 		if path[i] == '/' {
 			key := path[start:i]
@@ -227,7 +227,7 @@ func (n *node) find(path string) (result resultFind) {
 	}
 	key := path[start:]
 	child, ok = n.children[key]
-	if !ok {
+	if !ok && key != "/" {
 		child, ok = n.children[keyParam]
 		if ok {
 			result.params[child.paramName] = key
