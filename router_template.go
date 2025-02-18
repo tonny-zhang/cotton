@@ -1,14 +1,14 @@
 package cotton
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 )
 
 func getTplFiles(dir string, ext string) (list []string, err error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	for _, f := range files {
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
@@ -32,11 +32,12 @@ func getTplFiles(dir string, ext string) (list []string, err error) {
 //
 // funcs is functions register to template
 // example:
-// 	router.LoadTemplates(root, map[string]interface{}{
-// 		"md5": func(str string) string {
-// 			return str + "_md5"
-// 		},
-// 	})
+//
+//	router.LoadTemplates(root, map[string]interface{}{
+//		"md5": func(str string) string {
+//			return str + "_md5"
+//		},
+//	})
 func (router *Router) LoadTemplates(tplRoot string, funcs map[string]interface{}) {
 	if router.globalTemplate == nil {
 		tpl := template.New("global")

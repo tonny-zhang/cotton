@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/tonny-zhang/cotton/utils"
@@ -50,7 +50,7 @@ func (router *Router) StaticFile(prefix, root string, listDir bool) {
 	if !listDir {
 		fs = &onlyFilesFS{fs}
 	}
-	fileServer := http.StripPrefix(filepath.Join(router.prefix, prefix), http.FileServer(fs))
+	fileServer := http.StripPrefix(path.Join(router.prefix, prefix), http.FileServer(fs))
 
 	router.Get(utils.CleanPath(prefix+"/*filepath"), func(ctx *Context) {
 		fileServer.ServeHTTP(ctx.Response, ctx.Request)

@@ -1,18 +1,19 @@
 package utils
 
 import (
-	"path/filepath"
+	libPath "path"
 	"strings"
 )
 
 // CleanPath clean path
 // example:
-// 		/a////b => /a/b
-// 		/a/b////c/ => /a/b/c/
+//
+//	/a////b => /a/b
+//	/a/b////c/ => /a/b/c/
 func CleanPath(path string) string {
 	suffix := ""
 	if strings.HasSuffix(path, "/") {
 		suffix = "/"
 	}
-	return filepath.Clean(path) + suffix
+	return libPath.Clean(path) + suffix
 }
